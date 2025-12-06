@@ -286,65 +286,58 @@ graph_layout_props = dict(
 # 4. HEADER COMPONENT (CORRETTO SENZA PROP 'COLOR')
 # =============================================================================
 
-header_component = dmc.Paper(
+header_component = html.Div(
     id="header-container",
-    shadow="sm", p="xs", withBorder=False,
+    className="apple-glass",
     style={
         "position": "fixed", "top": 0, "width": "100%", "zIndex": 2000,
-        "backdropFilter": "blur(12px)", "backgroundColor": "rgba(255,255,255,0.85)",
-        "borderBottom": "1px solid rgba(0,0,0,0.05)"
+        "height": "56px", "display": "flex", "alignItems": "center"
     },
     children=[
         dmc.Container(
             fluid=True,
+            style={"width": "100%"},
             children=dmc.Group(
                 justify="space-between",
                 children=[
+                    # LOGO
                     dmc.Anchor(
                         dmc.Group([
-                            dmc.ThemeIcon(
-                                DashIconify(icon="mdi:brain", width=24),
-                                size="lg", radius="xl", color="indigo", variant="filled"
-                            ),
-                            dmc.Text("NeuroGraph 3D", size="xl", fw=800, c="dark", style={"letterSpacing": "-0.5px"})
-                        ]), href="/", style={"textDecoration": "none"}
+                            DashIconify(icon="mdi:brain", width=22, color="#1d1d1f"),
+                            dmc.Text("NeuroGraph 3D", size="md", fw=600, c="#1d1d1f", style={"letterSpacing": "-0.01em"})
+                        ], gap=8), href="/", style={"textDecoration": "none"}
                     ),
 
-                    # --- MENU CENTRALE DI NAVIGAZIONE ---
+                    # --- MENU CENTRALE ---
                     dmc.Group([
-                        dmc.Anchor(dmc.Button("Grafico 3D", variant="subtle", color="dark", radius="md",
-                                              leftSection=DashIconify(icon="mdi:cube-scan")), href="/graph"),
-                        dmc.Anchor(dmc.Button("Simulazione AI", variant="subtle", color="grape", radius="md",
-                                              leftSection=DashIconify(icon="mdi:robot-industrial")), href="/simulation"),
-                        dmc.Anchor(dmc.Button("Confronto", variant="subtle", color="orange", radius="md",
-                                              leftSection=DashIconify(icon="mdi:scale-balance")), href="/compare"),
-                    ], gap="xs"),
+                        dmc.Anchor(dmc.Button("Grafico 3D", variant="subtle", color="dark", size="sm", radius="xl",
+                                              style={"fontWeight": 400}), href="/graph"),
+                        dmc.Anchor(dmc.Button("Simulazione", variant="subtle", color="dark", size="sm", radius="xl",
+                                              style={"fontWeight": 400}), href="/simulation"),
+                        dmc.Anchor(dmc.Button("Confronto", variant="subtle", color="dark", size="sm", radius="xl",
+                                              style={"fontWeight": 400}), href="/compare"),
+                    ], gap=5),
 
-                    # --- SEZIONE DESTRA: CONTESTO E UTILITY ---
+                    # --- DESTRA ---
                     dmc.Group([
-                        # NUOVO: SELETTORE DI RETE ATTIVA
                         dmc.Select(
                             id="network-context-selector",
-                            data=[{"value": "main", "label": "📁 Upload Singolo"}],
+                            data=[{"value": "main", "label": "Upload Singolo"}],
                             value="main",
-                            variant="filled",
+                            variant="unstyled",
                             radius="md",
-                            leftSection=DashIconify(icon="mdi:source-branch"),
-                            style={"width": "180px", "display": "none"},  # Nascosto se non serve
+                            style={"width": "140px", "display": "none", "fontSize": "13px"},
                             allowDeselect=False
                         ),
-
-                        dmc.Divider(orientation="vertical", h=25),
-
                         dmc.Switch(
-                            id="theme-switch", size="lg",
-                            onLabel=DashIconify(icon="mdi:weather-night", width=16),
-                            offLabel=DashIconify(icon="mdi:weather-sunny", width=16),
+                            id="theme-switch", size="md",
+                            onLabel=DashIconify(icon="mdi:weather-night", width=14),
+                            offLabel=DashIconify(icon="mdi:weather-sunny", width=14),
                             checked=False,
-                            color="dark"
+                            color="gray"
                         ),
-                        dmc.Anchor(dmc.Button("Nuovo Upload", variant="filled", color="indigo", size="sm", radius="xl",
-                                              leftSection=DashIconify(icon="mdi:upload")), href="/")
+                        dmc.Anchor(dmc.Button("Upload", variant="filled", color="dark", size="xs", radius="xl",
+                                              style={"padding": "0 16px"}), href="/")
                     ])
                 ]
             )
@@ -373,180 +366,141 @@ upload_box_style = {
     'minHeight': '100px'
 }
 
-# --- CONTENUTO TAB 1: VISUALIZZAZIONE (Il tuo vecchio layout upload) ---
-tab_visualization_content = dmc.Grid(
-    gutter="xl",
-    align="center",
-    mt="lg",
+# --- CONTENUTO TAB 1: VISUALIZZAZIONE (Bento Grid Layout) ---
+tab_visualization_content = dmc.SimpleGrid(
+    cols={"base": 1, "sm": 2},
+    spacing="xl",
+    verticalSpacing="xl",
     children=[
-        dmc.GridCol(
-            span=7,
-            children=[
-                dmc.ThemeIcon(
-                    DashIconify(icon="mdi:brain", width=30),
-                    size=60, radius="xl", variant="light", color="blue", mb="md"
-                ),
-                dmc.Text("Caricamento Dati Connectome", size="xl", fw=700, c="blue", mb="sm"),
-                dmc.Text(
-                    "Importa le matrici di adiacenza e le coordinate spaziali per generare il grafo 3D interattivo. "
-                    "Supporta formati CSV, TXT ed Excel.",
-                    size="lg", c="dimmed", mb="xl", style={"maxWidth": "90%"}
-                ),
-                dmc.Alert(
-                    title="Guida Rapida ai Dati",
-                    color="blue",
-                    variant="light",
-                    radius="md",
-                    icon=DashIconify(icon="mdi:information-variant"),
-                    children=[
-                        dmc.Stack(gap="xs", children=[
-                            dmc.Text("1. File Mapping (Nodi): Deve contenere nomi ROI e coordinate (x, y, z).", size="sm"),
-                            dmc.Text("2. File Edges (Archi): Matrice di adiacenza o lista edge (source, target, weight).", size="sm"),
-                            dmc.Group([
-                                dmc.Badge("Supporto AAL/M.Cube", color="green", variant="dot"),
-                                dmc.Badge("CSV/TXT/XLSX", color="gray", variant="outline"),
-                            ], mt="xs")
-                        ])
-                    ]
-                )
-            ]
-        ),
-        dmc.GridCol(
-            span=5,
-            children=[
-                dmc.Card(
-                    withBorder=True, shadow="lg", radius="lg", p="xl",
-                    children=[
-                        dmc.Text("Pannello Ingestione Dati", size="lg", fw=700, ta="center", mb="lg", c="dark"),
+        # LEFT COLUMN (INFO)
+        dmc.Stack([
+             dmc.Card(
+                 p="xl",
+                 children=[
+                     dmc.Text("Visualizzazione Dati", size="xl", fw=700, mb="sm"),
+                     dmc.Text(
+                         "Importa le matrici di adiacenza e le coordinate spaziali per generare il grafo 3D interattivo. "
+                         "Il sistema supporta CSV, TXT ed Excel.",
+                         size="md", c="dimmed", mb="xl", lh=1.5
+                     ),
+                     dmc.Group([
+                         dmc.Badge("AAL Atlas", color="gray", variant="light"),
+                         dmc.Badge("CSV / XLSX", color="gray", variant="light"),
+                         dmc.Badge("3D WebGL", color="gray", variant="light"),
+                     ])
+                 ]
+             ),
+             dmc.Card(
+                 p="lg",
+                 bg="#f5f5f7", # Slightly darker than white
+                 children=[
+                    dmc.Group([
+                        DashIconify(icon="mdi:information-variant", width=20, color="#86868b"),
+                        dmc.Text("Formato Richiesto", size="sm", fw=600, c="#86868b")
+                    ], mb="xs"),
+                    dmc.Text("Mapping: Nomi ROI e coordinate (x, y, z).", size="sm", c="dimmed", mb=5),
+                    dmc.Text("Edges: Matrice di adiacenza o lista edge.", size="sm", c="dimmed"),
+                 ]
+             )
+        ]),
 
-                        # Upload 1
-                        dmc.Text("1. File Mapping (Nodi)", fw=600, size="sm", mb=8, c="dimmed"),
+        # RIGHT COLUMN (UPLOAD)
+        dmc.Card(
+            p="xl",
+            children=[
+                dmc.Text("Ingestione Dati", size="lg", fw=600, mb="lg"),
+
+                dmc.Grid([
+                    dmc.GridCol(span=6, children=[
+                        dmc.Text("Mapping", size="xs", fw=600, c="dimmed", mb=5, tt="uppercase"),
                         dcc.Upload(
                             id='upload-mapping',
                             style=upload_box_style,
                             className="upload-box",
-                            children=html.Div([
-                                DashIconify(icon="mdi:map-marker-path", width=40, color="#228be6"),
-                                dmc.Text("Trascina Mapping.csv o Clicca", size="sm", fw=500, mt=10)
+                            children=dmc.Stack(gap=5, align="center", children=[
+                                DashIconify(icon="mdi:map-marker-path", width=24, color="#0071e3"),
+                                dmc.Text("Trascina CSV", size="xs", fw=500)
                             ])
                         ),
-                        html.Div(id="file-info-mapping", style={"marginTop": "10px", "minHeight": "20px"}),
-                        dmc.Space(h=20),
-
-                        # Upload 2
-                        dmc.Text("2. File Edges (Connessioni)", fw=600, size="sm", mb=8, c="dimmed"),
+                        html.Div(id="file-info-mapping", style={"marginTop": "5px", "minHeight": "15px", "fontSize":"11px"})
+                    ]),
+                    dmc.GridCol(span=6, children=[
+                        dmc.Text("Edges", size="xs", fw=600, c="dimmed", mb=5, tt="uppercase"),
                         dcc.Upload(
                             id='upload-edges',
                             style=upload_box_style,
                             className="upload-box",
-                            children=html.Div([
-                                DashIconify(icon="mdi:vector-line", width=40, color="#fd7e14"),
-                                dmc.Text("Trascina Edges.csv o Clicca", size="sm", fw=500, mt=10)
+                            children=dmc.Stack(gap=5, align="center", children=[
+                                DashIconify(icon="mdi:vector-line", width=24, color="#0071e3"),
+                                dmc.Text("Trascina CSV", size="xs", fw=500)
                             ])
                         ),
-                        html.Div(id="file-info-edges", style={"marginTop": "10px", "minHeight": "20px"}),
-                        dmc.Space(h=30),
+                        html.Div(id="file-info-edges", style={"marginTop": "5px", "minHeight": "15px", "fontSize":"11px"})
+                    ])
+                ]),
 
-                        dmc.Button(
-                            "Genera Modello 3D",
-                            id="start-button",
-                            fullWidth=True,
-                            size="lg",
-                            radius="md",
-                            disabled=True,
-                            color="blue",
-                            leftSection=DashIconify(icon="mdi:cube-scan"),
-                            variant="gradient",
-                            gradient={"from": "blue", "to": "cyan", "deg": 45}
-                        ),
-                    ]
-                )
+                dmc.Space(h=30),
+
+                dmc.Button(
+                    "Genera Modello 3D",
+                    id="start-button",
+                    fullWidth=True,
+                    size="lg",
+                    radius="xl",
+                    disabled=True,
+                    color="dark",
+                    rightSection=DashIconify(icon="mdi:arrow-right", width=18),
+                ),
             ]
         )
     ]
 )
 
-# --- CONTENUTO TAB 2: AI SIMULATION (Placeholder) ---
+# --- CONTENUTO TAB 2: AI SIMULATION (Minimal) ---
 tab_ai_content = dmc.Container(
     fluid=True,
-    py="xl",
     children=[
-        dmc.Grid(
-            gutter="xl",
-            align="center",
+        dmc.SimpleGrid(
+            cols={"base": 1, "sm": 2},
+            spacing="xl",
             children=[
-                # Lato Sinistro: Descrizione
-                dmc.GridCol(span=5, children=[
-                    dmc.Stack([
-                        dmc.ThemeIcon(
-                            DashIconify(icon="mdi:robot-industrial", width=35),
-                            size=70, radius="xl", color="grape", variant="light"
-                        ),
-                        dmc.Title("Simulazione Neurale AI", order=2),
-                        dmc.Text(
-                            "Carica i dati qui per saltare la visualizzazione 3D e accedere direttamente "
-                            "al modulo di stress-test e previsione lesionale.",
-                            size="lg", c="dimmed", style={"maxWidth": "90%"}
-                        ),
-                        dmc.Alert(
-                            "Ottimizzato per dispositivi mobili o calcolo puro.",
-                            color="grape", variant="light", radius="md",
-                            icon=DashIconify(icon="mdi:flash")
-                        )
-                    ])
+                dmc.Card(p="xl", children=[
+                    dmc.ThemeIcon(
+                        DashIconify(icon="mdi:robot-excited-outline", width=30),
+                        size=60, radius="xl", color="dark", variant="light", mb="lg"
+                    ),
+                    dmc.Text("Simulazione Stress-Test", size="xl", fw=700, mb="xs"),
+                    dmc.Text(
+                        "Analizza la resilienza della rete neurale simulando danni focali o sistemici.",
+                        c="dimmed", size="md", lh=1.6
+                    ),
                 ]),
 
-                # Lato Destro: Pannello Upload Dedicato
-                dmc.GridCol(span=7, children=[
-                    dmc.Card(
-                        withBorder=True, shadow="lg", radius="lg", p="xl",
-                        children=[
-                            dmc.Text("Caricamento Rapido per Simulazione", fw=700, size="lg", mb="xl"),
+                dmc.Card(p="xl", children=[
+                    dmc.Text("Caricamento Rapido", size="sm", fw=600, c="dimmed", mb="lg", tt="uppercase"),
+                    dmc.Group(grow=True, children=[
+                        dcc.Upload(
+                            id='upload-mapping-sim',
+                            style=upload_box_style, className="upload-box",
+                            children=dmc.Stack(gap=5, align="center", children=[
+                                DashIconify(icon="mdi:map-marker", width=20), dmc.Text("Mapping", size="xs")
+                            ])
+                        ),
+                        dcc.Upload(
+                            id='upload-edges-sim',
+                            style=upload_box_style, className="upload-box",
+                            children=dmc.Stack(gap=5, align="center", children=[
+                                DashIconify(icon="mdi:vector-curve", width=20), dmc.Text("Edges", size="xs")
+                            ])
+                        )
+                    ], mb="lg"),
+                    html.Div(id="file-info-mapping-sim", style={"fontSize":"10px"}),
+                    html.Div(id="file-info-edges-sim", style={"fontSize":"10px", "marginBottom": "20px"}),
 
-                            dmc.Group([
-                                # Upload Mapping Sim
-                                dmc.Stack([
-                                    dmc.Text("1. Mapping (Nodi)", size="sm", fw=600, c="dimmed"),
-                                    dcc.Upload(
-                                        id='upload-mapping-sim',  # ID DIVERSO
-                                        style=upload_box_style, # Reusing consistent style
-                                        className="upload-box",
-                                        children=html.Div([
-                                            DashIconify(icon="mdi:map-marker-path", width=30, color="#be4bdb"),
-                                            dmc.Text("Select Mapping", size="sm", fw=500, mt=5)
-                                        ])
-                                    ),
-                                    html.Div(id="file-info-mapping-sim", style={"minHeight": "20px"})
-                                ], style={"flex": 1}),
-
-                                # Upload Edges Sim
-                                dmc.Stack([
-                                    dmc.Text("2. Edges (Connessioni)", size="sm", fw=600, c="dimmed"),
-                                    dcc.Upload(
-                                        id='upload-edges-sim',  # ID DIVERSO
-                                        style=upload_box_style, # Reusing consistent style
-                                        className="upload-box",
-                                        children=html.Div([
-                                            DashIconify(icon="mdi:vector-line", width=30, color="#fd7e14"),
-                                            dmc.Text("Select Edges", size="sm", fw=500, mt=5)
-                                        ])
-                                    ),
-                                    html.Div(id="file-info-edges-sim", style={"minHeight": "20px"})
-                                ], style={"flex": 1}),
-                            ], grow=True, mb="xl"),
-
-                            dmc.Button(
-                                "Carica & Vai alla Simulazione",
-                                id="btn-load-and-go-sim",  # ID PER LA NUOVA AZIONE
-                                fullWidth=True,
-                                size="lg",
-                                radius="md",
-                                color="grape",
-                                rightSection=DashIconify(icon="mdi:arrow-right"),
-                                disabled=True,  # Abilitato via callback
-                                variant="filled"
-                            )
-                        ]
+                    dmc.Button(
+                        "Avvia Simulazione",
+                        id="btn-load-and-go-sim",
+                        fullWidth=True, size="md", radius="xl", color="dark", disabled=True
                     )
                 ])
             ]
@@ -698,72 +652,49 @@ tab_compare_content = dmc.Container(
 # --- LAYOUT FINALE HOME PAGE ---
 layout_upload = dmc.Container(
     fluid=True,
+    style={"paddingTop": "120px", "paddingBottom": "80px"},
     children=[
-        # 1. HERO SECTION
-        dmc.Paper(
-            radius="md",
-            p="xl",
-            withBorder=False,
-            style={"background": "linear-gradient(135deg, #e3fafc 0%, #e7f5ff 100%)", "marginTop": "40px"},
+        # 1. HERO SECTION (Minimalist, Apple-style)
+        dmc.Stack(
+            align="center",
+            gap="lg",
             children=[
-                dmc.Stack(
-                    align="center",
-                    gap="xs",
-                    children=[
-                        dmc.Group([
-                            DashIconify(icon="mdi:brain", width=50, color="#1c7ed6"),
-                            dmc.Title("Benvenuto in NeuroGraph 3D", order=1, c="dark")
-                        ]),
-                        dmc.Text(
-                            "Piattaforma avanzata per l'esplorazione topologica, l'analisi di connettività "
-                            "e la visualizzazione interattiva del connettoma umano.",
-                            size="lg", c="dimmed", ta="center", style={"maxWidth": "700px"}
-                        ),
-                        dmc.Divider(size="sm", style={"width": "100px"}, color="blue")
-                    ]
-                )
+                dmc.Stack(gap=5, align="center", children=[
+                     dmc.Text("NeuroGraph 3D", className="hero-title", ta="center"),
+                     dmc.Text("Esplora la complessità del cervello umano.", className="hero-subtitle", ta="center", style={"maxWidth": "600px"}),
+                ]),
+                dmc.Space(h=20),
             ]
         ),
 
-        # 2. SELEZIONE MODALITÀ (TABS)
+        # 2. TABS (Segmented Control style)
         dmc.Container(
             size="lg",
             mt="xl",
             children=[
                 dmc.Tabs(
-                    color="blue",
-                    variant="outline",
-                    radius="md",
+                    color="dark",
+                    variant="pills",
+                    radius="xl",
                     value="viz",
                     children=[
-                        dmc.TabsList(
-                            grow=True,
-                            children=[
-                                dmc.TabsTab(
-                                    "Visualizzazione Dati",
-                                    value="viz",
-                                    leftSection=DashIconify(icon="mdi:chart-bubble", width=20),
-                                ),
-                                # --- MODIFICA QUI SOTTO ---
-                                dmc.TabsTab(
-                                    "Simulazione AI",
-                                    value="ai",
-                                    # HO CAMBIATO L'ICONA QUI:
-                                    leftSection=DashIconify(icon="mdi:robot-industrial", width=20),
-                                ),
-                                # --------------------------
-                                dmc.TabsTab(
-                                    "Confronto Reti",
-                                    value="compare",
-                                    leftSection=DashIconify(icon="mdi:compare-horizontal", width=20),
-                                ),
-                            ]
+                        dmc.Center(
+                            dmc.TabsList(
+                                style={"backgroundColor": "#eaeaec", "padding": "4px", "borderRadius": "30px"},
+                                children=[
+                                    dmc.TabsTab("Visualizzazione", value="viz", style={"fontWeight": 500, "borderRadius": "20px"}),
+                                    dmc.TabsTab("Simulazione AI", value="ai", style={"fontWeight": 500, "borderRadius": "20px"}),
+                                    dmc.TabsTab("Confronto Reti", value="compare", style={"fontWeight": 500, "borderRadius": "20px"}),
+                                ]
+                            )
                         ),
 
-                        # Pannelli Contenuto
-                        dmc.TabsPanel(tab_visualization_content, value="viz"),
-                        dmc.TabsPanel(tab_ai_content, value="ai"),
-                        dmc.TabsPanel(tab_compare_content, value="compare"),
+                        dmc.Space(h=40),
+
+                        # Pannelli Contenuto (Animated)
+                        dmc.TabsPanel(tab_visualization_content, value="viz", style={"animation": "fadeUp 0.5s ease"}),
+                        dmc.TabsPanel(tab_ai_content, value="ai", style={"animation": "fadeUp 0.5s ease"}),
+                        dmc.TabsPanel(tab_compare_content, value="compare", style={"animation": "fadeUp 0.5s ease"}),
                     ]
                 )
             ]
@@ -1459,12 +1390,13 @@ app.layout = dmc.MantineProvider(
     forceColorScheme="light",
     theme={
         "colorScheme": "light",
-        "primaryColor": "indigo",
-        "fontFamily": "'Inter', sans-serif",
-        "defaultRadius": "md",
+        "primaryColor": "dark",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        "defaultRadius": "lg",
         "components": {
-            "Button": {"defaultProps": {"fw": 600}},
-            "Card": {"defaultProps": {"shadow": "sm", "withBorder": True}},
+            "Button": {"defaultProps": {"fw": 500}},
+            "Card": {"defaultProps": {"shadow": "none", "withBorder": False, "className": "apple-card"}},
+            "Paper": {"defaultProps": {"shadow": "none", "withBorder": False, "radius": "lg"}},
         }
     },
     children=[
