@@ -288,57 +288,66 @@ graph_layout_props = dict(
 
 header_component = dmc.Paper(
     id="header-container",
-    shadow="xs", p="md", withBorder=True,
-    style={"position": "fixed", "top": 0, "width": "100%", "zIndex": 2000, "backdropFilter": "blur(10px)",
-           "opacity": 1},
+    shadow="sm", p="xs", withBorder=False,
+    style={
+        "position": "fixed", "top": 0, "width": "100%", "zIndex": 2000,
+        "backdropFilter": "blur(12px)", "backgroundColor": "rgba(255,255,255,0.85)",
+        "borderBottom": "1px solid rgba(0,0,0,0.05)"
+    },
     children=[
-        dmc.Group(
-            justify="space-between",
-            children=[
-                dmc.Anchor(
+        dmc.Container(
+            fluid=True,
+            children=dmc.Group(
+                justify="space-between",
+                children=[
+                    dmc.Anchor(
+                        dmc.Group([
+                            dmc.ThemeIcon(
+                                DashIconify(icon="mdi:brain", width=24),
+                                size="lg", radius="xl", color="indigo", variant="filled"
+                            ),
+                            dmc.Text("NeuroGraph 3D", size="xl", fw=800, c="dark", style={"letterSpacing": "-0.5px"})
+                        ]), href="/", style={"textDecoration": "none"}
+                    ),
+
+                    # --- MENU CENTRALE DI NAVIGAZIONE ---
                     dmc.Group([
-                        dmc.ThemeIcon(DashIconify(icon="mdi:brain", width=20), size="lg", radius="xl", color="blue",
-                                      variant="light"),
-                        dmc.Text("NeuroGraph 3D", size="lg", fw=700, c="dark")
-                    ]), href="/", style={"textDecoration": "none"}
-                ),
+                        dmc.Anchor(dmc.Button("Grafico 3D", variant="subtle", color="dark", radius="md",
+                                              leftSection=DashIconify(icon="mdi:cube-scan")), href="/graph"),
+                        dmc.Anchor(dmc.Button("Simulazione AI", variant="subtle", color="grape", radius="md",
+                                              leftSection=DashIconify(icon="mdi:robot-industrial")), href="/simulation"),
+                        dmc.Anchor(dmc.Button("Confronto", variant="subtle", color="orange", radius="md",
+                                              leftSection=DashIconify(icon="mdi:scale-balance")), href="/compare"),
+                    ], gap="xs"),
 
-                # --- MENU CENTRALE DI NAVIGAZIONE ---
-                dmc.Group([
-                    dmc.Anchor(dmc.Button("Grafico 3D", variant="subtle", color="gray",
-                                          leftSection=DashIconify(icon="mdi:cube-scan")), href="/graph"),
-                    dmc.Anchor(dmc.Button("Simulazione AI", variant="subtle", color="grape",
-                                          leftSection=DashIconify(icon="mdi:robot-industrial")), href="/simulation"),
-                    dmc.Anchor(dmc.Button("Confronto", variant="subtle", color="orange",
-                                          leftSection=DashIconify(icon="mdi:scale-balance")), href="/compare"),
-                ]),
+                    # --- SEZIONE DESTRA: CONTESTO E UTILITY ---
+                    dmc.Group([
+                        # NUOVO: SELETTORE DI RETE ATTIVA
+                        dmc.Select(
+                            id="network-context-selector",
+                            data=[{"value": "main", "label": "📁 Upload Singolo"}],
+                            value="main",
+                            variant="filled",
+                            radius="md",
+                            leftSection=DashIconify(icon="mdi:source-branch"),
+                            style={"width": "180px", "display": "none"},  # Nascosto se non serve
+                            allowDeselect=False
+                        ),
 
-                # --- SEZIONE DESTRA: CONTESTO E UTILITY ---
-                dmc.Group([
-                    # NUOVO: SELETTORE DI RETE ATTIVA
-                    dmc.Select(
-                        id="network-context-selector",
-                        data=[{"value": "main", "label": "📁 Upload Singolo"}],
-                        value="main",
-                        variant="filled",
-                        # RIMOSSO 'color="indigo"' CHE CAUSAVA L'ERRORE
-                        leftSection=DashIconify(icon="mdi:source-branch"),
-                        style={"width": "180px", "display": "none"},  # Nascosto se non serve
-                        allowDeselect=False
-                    ),
+                        dmc.Divider(orientation="vertical", h=25),
 
-                    dmc.Divider(orientation="vertical", h=20),
-
-                    dmc.Switch(
-                        id="theme-switch", size="lg",
-                        onLabel=DashIconify(icon="mdi:weather-night", width=15),
-                        offLabel=DashIconify(icon="mdi:weather-sunny", width=15),
-                        checked=False
-                    ),
-                    dmc.Anchor(dmc.Button("Nuovo Upload", variant="filled", color="blue", size="sm",
-                                          leftSection=DashIconify(icon="mdi:upload")), href="/")
-                ])
-            ]
+                        dmc.Switch(
+                            id="theme-switch", size="lg",
+                            onLabel=DashIconify(icon="mdi:weather-night", width=16),
+                            offLabel=DashIconify(icon="mdi:weather-sunny", width=16),
+                            checked=False,
+                            color="dark"
+                        ),
+                        dmc.Anchor(dmc.Button("Nuovo Upload", variant="filled", color="indigo", size="sm", radius="xl",
+                                              leftSection=DashIconify(icon="mdi:upload")), href="/")
+                    ])
+                ]
+            )
         )
     ]
 )
@@ -350,13 +359,18 @@ upload_box_style = {
     'borderWidth': '2px',
     'borderStyle': 'dashed',
     'borderColor': '#dee2e6',
-    'borderRadius': '10px',
+    'borderRadius': '12px',
     'textAlign': 'center',
-    'padding': '20px',
+    'padding': '30px',
     'cursor': 'pointer',
     'backgroundColor': '#f8f9fa',
     'transition': 'all 0.3s ease',
-    'color': '#495057'
+    'color': '#495057',
+    'display': 'flex',
+    'flexDirection': 'column',
+    'alignItems': 'center',
+    'justifyContent': 'center',
+    'minHeight': '100px'
 }
 
 # --- CONTENUTO TAB 1: VISUALIZZAZIONE (Il tuo vecchio layout upload) ---
@@ -368,23 +382,30 @@ tab_visualization_content = dmc.Grid(
         dmc.GridCol(
             span=7,
             children=[
+                dmc.ThemeIcon(
+                    DashIconify(icon="mdi:brain", width=30),
+                    size=60, radius="xl", variant="light", color="blue", mb="md"
+                ),
                 dmc.Text("Caricamento Dati Connectome", size="xl", fw=700, c="blue", mb="sm"),
                 dmc.Text(
-                    "Importa le matrici di adiacenza e le coordinate spaziali per generare il grafo 3D.",
-                    size="md", c="dimmed", mb="md"
+                    "Importa le matrici di adiacenza e le coordinate spaziali per generare il grafo 3D interattivo. "
+                    "Supporta formati CSV, TXT ed Excel.",
+                    size="lg", c="dimmed", mb="xl", style={"maxWidth": "90%"}
                 ),
                 dmc.Alert(
-                    title="Specifiche Tecniche",
+                    title="Guida Rapida ai Dati",
                     color="blue",
-                    variant="outline",
-                    icon=DashIconify(icon="mdi:information"),
+                    variant="light",
+                    radius="md",
+                    icon=DashIconify(icon="mdi:information-variant"),
                     children=[
-                        dmc.Text("1. Mapping: Richiesto file CSV con colonne [roi_name, x, y, z]."),
-                        dmc.Text("2. Edges: Richiesto file CSV o Matrice di Adiacenza pesata."),
-                        dmc.Space(h=10),
-                        dmc.Group([
-                            dmc.Badge("Supporto AAL/M.Cube", color="green"),
-                            dmc.Badge("CSV/TXT", color="gray"),
+                        dmc.Stack(gap="xs", children=[
+                            dmc.Text("1. File Mapping (Nodi): Deve contenere nomi ROI e coordinate (x, y, z).", size="sm"),
+                            dmc.Text("2. File Edges (Archi): Matrice di adiacenza o lista edge (source, target, weight).", size="sm"),
+                            dmc.Group([
+                                dmc.Badge("Supporto AAL/M.Cube", color="green", variant="dot"),
+                                dmc.Badge("CSV/TXT/XLSX", color="gray", variant="outline"),
+                            ], mt="xs")
                         ])
                     ]
                 )
@@ -394,44 +415,49 @@ tab_visualization_content = dmc.Grid(
             span=5,
             children=[
                 dmc.Card(
-                    withBorder=True, shadow="md", radius="md", p="xl",
+                    withBorder=True, shadow="lg", radius="lg", p="xl",
                     children=[
-                        dmc.Text("Pannello Ingestione Dati", size="lg", fw=700, ta="center", mb="lg"),
+                        dmc.Text("Pannello Ingestione Dati", size="lg", fw=700, ta="center", mb="lg", c="dark"),
 
                         # Upload 1
-                        dmc.Text("1. File Mapping (Nodi)", fw=500, mb=5),
+                        dmc.Text("1. File Mapping (Nodi)", fw=600, size="sm", mb=8, c="dimmed"),
                         dcc.Upload(
                             id='upload-mapping',
                             style=upload_box_style,
+                            className="upload-box",
                             children=html.Div([
-                                DashIconify(icon="mdi:map-marker-path", width=30, color="cyan"),
-                                html.Div("Trascina Mapping.csv", style={'marginTop': '5px'})
+                                DashIconify(icon="mdi:map-marker-path", width=40, color="#228be6"),
+                                dmc.Text("Trascina Mapping.csv o Clicca", size="sm", fw=500, mt=10)
                             ])
                         ),
-                        html.Div(id="file-info-mapping", style={"marginTop": "10px"}),
-                        dmc.Space(h=15),
+                        html.Div(id="file-info-mapping", style={"marginTop": "10px", "minHeight": "20px"}),
+                        dmc.Space(h=20),
 
                         # Upload 2
-                        dmc.Text("2. File Edges (Connessioni)", fw=500, mb=5),
+                        dmc.Text("2. File Edges (Connessioni)", fw=600, size="sm", mb=8, c="dimmed"),
                         dcc.Upload(
                             id='upload-edges',
                             style=upload_box_style,
+                            className="upload-box",
                             children=html.Div([
-                                DashIconify(icon="mdi:vector-line", width=30, color="orange"),
-                                html.Div("Trascina Edges.csv", style={'marginTop': '5px'})
+                                DashIconify(icon="mdi:vector-line", width=40, color="#fd7e14"),
+                                dmc.Text("Trascina Edges.csv o Clicca", size="sm", fw=500, mt=10)
                             ])
                         ),
-                        html.Div(id="file-info-edges", style={"marginTop": "10px"}),
-                        dmc.Space(h=25),
+                        html.Div(id="file-info-edges", style={"marginTop": "10px", "minHeight": "20px"}),
+                        dmc.Space(h=30),
 
                         dmc.Button(
                             "Genera Modello 3D",
                             id="start-button",
                             fullWidth=True,
-                            size="md",
+                            size="lg",
+                            radius="md",
                             disabled=True,
                             color="blue",
-                            leftSection=DashIconify(icon="mdi:cube-scan")
+                            leftSection=DashIconify(icon="mdi:cube-scan"),
+                            variant="gradient",
+                            gradient={"from": "blue", "to": "cyan", "deg": 45}
                         ),
                     ]
                 )
@@ -452,16 +478,20 @@ tab_ai_content = dmc.Container(
                 # Lato Sinistro: Descrizione
                 dmc.GridCol(span=5, children=[
                     dmc.Stack([
-                        DashIconify(icon="mdi:robot-industrial", width=60, color="#868e96"),
+                        dmc.ThemeIcon(
+                            DashIconify(icon="mdi:robot-industrial", width=35),
+                            size=70, radius="xl", color="grape", variant="light"
+                        ),
                         dmc.Title("Simulazione Neurale AI", order=2),
                         dmc.Text(
                             "Carica i dati qui per saltare la visualizzazione 3D e accedere direttamente "
                             "al modulo di stress-test e previsione lesionale.",
-                            size="lg", c="dimmed"
+                            size="lg", c="dimmed", style={"maxWidth": "90%"}
                         ),
                         dmc.Alert(
-                            "Questa modalità è ottimizzata per computer meno potenti o per analisi puramente numeriche.",
-                            color="grape", variant="light", icon=DashIconify(icon="mdi:flash")
+                            "Ottimizzato per dispositivi mobili o calcolo puro.",
+                            color="grape", variant="light", radius="md",
+                            icon=DashIconify(icon="mdi:flash")
                         )
                     ])
                 ]),
@@ -469,43 +499,39 @@ tab_ai_content = dmc.Container(
                 # Lato Destro: Pannello Upload Dedicato
                 dmc.GridCol(span=7, children=[
                     dmc.Card(
-                        withBorder=True, shadow="sm", radius="md", p="lg",
+                        withBorder=True, shadow="lg", radius="lg", p="xl",
                         children=[
-                            dmc.Text("Caricamento Rapido per Simulazione", fw=700, size="lg", mb="md"),
+                            dmc.Text("Caricamento Rapido per Simulazione", fw=700, size="lg", mb="xl"),
 
                             dmc.Group([
                                 # Upload Mapping Sim
                                 dmc.Stack([
-                                    dmc.Text("1. Mapping (Nodi)", size="sm", fw=500),
+                                    dmc.Text("1. Mapping (Nodi)", size="sm", fw=600, c="dimmed"),
                                     dcc.Upload(
                                         id='upload-mapping-sim',  # ID DIVERSO
-                                        style={
-                                            'border': '1px dashed #ced4da', 'borderRadius': '5px',
-                                            'padding': '10px', 'textAlign': 'center', 'cursor': 'pointer'
-                                        },
+                                        style=upload_box_style, # Reusing consistent style
+                                        className="upload-box",
                                         children=html.Div([
-                                            DashIconify(icon="mdi:map-marker-path", width=20, color="gray"),
-                                            dmc.Text("Select Mapping", size="xs")
+                                            DashIconify(icon="mdi:map-marker-path", width=30, color="#be4bdb"),
+                                            dmc.Text("Select Mapping", size="sm", fw=500, mt=5)
                                         ])
                                     ),
-                                    html.Div(id="file-info-mapping-sim")
+                                    html.Div(id="file-info-mapping-sim", style={"minHeight": "20px"})
                                 ], style={"flex": 1}),
 
                                 # Upload Edges Sim
                                 dmc.Stack([
-                                    dmc.Text("2. Edges (Connessioni)", size="sm", fw=500),
+                                    dmc.Text("2. Edges (Connessioni)", size="sm", fw=600, c="dimmed"),
                                     dcc.Upload(
                                         id='upload-edges-sim',  # ID DIVERSO
-                                        style={
-                                            'border': '1px dashed #ced4da', 'borderRadius': '5px',
-                                            'padding': '10px', 'textAlign': 'center', 'cursor': 'pointer'
-                                        },
+                                        style=upload_box_style, # Reusing consistent style
+                                        className="upload-box",
                                         children=html.Div([
-                                            DashIconify(icon="mdi:vector-line", width=20, color="gray"),
-                                            dmc.Text("Select Edges", size="xs")
+                                            DashIconify(icon="mdi:vector-line", width=30, color="#fd7e14"),
+                                            dmc.Text("Select Edges", size="sm", fw=500, mt=5)
                                         ])
                                     ),
-                                    html.Div(id="file-info-edges-sim")
+                                    html.Div(id="file-info-edges-sim", style={"minHeight": "20px"})
                                 ], style={"flex": 1}),
                             ], grow=True, mb="xl"),
 
@@ -514,9 +540,11 @@ tab_ai_content = dmc.Container(
                                 id="btn-load-and-go-sim",  # ID PER LA NUOVA AZIONE
                                 fullWidth=True,
                                 size="lg",
+                                radius="md",
                                 color="grape",
                                 rightSection=DashIconify(icon="mdi:arrow-right"),
-                                disabled=True  # Abilitato via callback
+                                disabled=True,  # Abilitato via callback
+                                variant="filled"
                             )
                         ]
                     )
@@ -528,20 +556,32 @@ tab_ai_content = dmc.Container(
 
 upload_style_home = {
     'border': '1px dashed #ced4da', 'borderRadius': '8px', 'padding': '10px',
-    'textAlign': 'center', 'cursor': 'pointer', 'backgroundColor': '#fff', 'transition': '0.2s', 'fontSize': '12px'
+    'textAlign': 'center', 'cursor': 'pointer', 'backgroundColor': '#fff',
+    'transition': '0.2s', 'fontSize': '12px', 'minHeight': '50px',
+    'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'
 }
 
 
 # --- 1. DEFINIZIONE FUNZIONE HELPER (DEVE STARE QUI, PRIMA DEL LAYOUT) ---
 def create_upload_slot(letter, color, label):
-    return dmc.Stack(gap="xs", children=[
-        dmc.Badge(label, color=color, variant="filled", fullWidth=True),
-        dcc.Upload(id=f'home-map-{letter}', style=upload_style_home,
-                   children=html.Div([DashIconify(icon="mdi:file"), f" Map {letter.upper()}"])),
-        html.Div(id=f"fb-map-{letter}", style={"fontSize": "10px", "color": "green", "minHeight": "15px"}),
-        dcc.Upload(id=f'home-edge-{letter}', style=upload_style_home,
-                   children=html.Div([DashIconify(icon="mdi:link"), f" Edge {letter.upper()}"])),
-        html.Div(id=f"fb-edge-{letter}", style={"fontSize": "10px", "color": "green", "minHeight": "15px"})
+    return dmc.Paper(p="sm", withBorder=True, shadow="xs", radius="md", children=[
+        dmc.Stack(gap="xs", children=[
+            dmc.Badge(label, color=color, variant="light", fullWidth=True, size="lg"),
+            dcc.Upload(
+                id=f'home-map-{letter}',
+                style=upload_style_home,
+                className="upload-box",
+                children=dmc.Group([DashIconify(icon="mdi:file-document-outline", width=20, color=color), dmc.Text(f"Mapping {letter.upper()}", size="sm")], justify="center")
+            ),
+            html.Div(id=f"fb-map-{letter}", style={"fontSize": "11px", "color": "green", "minHeight": "15px", "textAlign": "center"}),
+            dcc.Upload(
+                id=f'home-edge-{letter}',
+                style=upload_style_home,
+                className="upload-box",
+                children=dmc.Group([DashIconify(icon="mdi:vector-link", width=20, color=color), dmc.Text(f"Edges {letter.upper()}", size="sm")], justify="center")
+            ),
+            html.Div(id=f"fb-edge-{letter}", style={"fontSize": "11px", "color": "green", "minHeight": "15px", "textAlign": "center"})
+        ])
     ])
 
 
@@ -1417,7 +1457,16 @@ chat_window_style = {
 app.layout = dmc.MantineProvider(
     id="mantine-provider",
     forceColorScheme="light",
-    theme={"colorScheme": "light"},
+    theme={
+        "colorScheme": "light",
+        "primaryColor": "indigo",
+        "fontFamily": "'Inter', sans-serif",
+        "defaultRadius": "md",
+        "components": {
+            "Button": {"defaultProps": {"fw": 600}},
+            "Card": {"defaultProps": {"shadow": "sm", "withBorder": True}},
+        }
+    },
     children=[
         # --- STORES ---
         dcc.Store(id='store-node-data'), dcc.Store(id='store-adj-matrix'), dcc.Store(id='store-edge-coords'),
