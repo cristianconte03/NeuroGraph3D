@@ -38,8 +38,8 @@ from openai import OpenAI
 
 # Configurazione per usare GROQ (Gratis e Veloce)
 client = OpenAI(
-    base_url="https://api.groq.com/openai/v1", # Indirizziamo le richieste a Groq
-    api_key="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"
+    base_url="https://api.groq.com/openai/v1",  # Indirizziamo le richieste a Groq
+    api_key="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"
 )
 
 # =============================================================================
@@ -260,12 +260,13 @@ def parse_file_contents(contents, file_type="unknown"):
 
     return df
 
+
 # =============================================================================
 # 3. DASH INIT
 # =============================================================================
 
-app = dash.Dash(__name__, suppress_callback_exceptions=True)
-server=app.server
+app = dash.Dash(__name__, suppress_callback_exceptions=True, title="NeuroGraph 3D")
+server = app.server
 
 # Definizione stile globale per i grafici Plotly (Tema Chiaro)
 graph_layout_props = dict(
@@ -608,7 +609,8 @@ tab_compare_content = dmc.Container(
                 DashIconify(icon="mdi:scale-balance", width=50, color="#fd7e14"),
                 dmc.Stack(gap=0, children=[
                     dmc.Title("Confronto Multi-Rete", order=2),
-                    dmc.Text("Carica le reti da confrontare. Il layout si adatterà automaticamente.", c="dimmed", size="sm")
+                    dmc.Text("Carica le reti da confrontare. Il layout si adatterà automaticamente.", c="dimmed",
+                             size="sm")
                 ])
             ]),
 
@@ -617,15 +619,17 @@ tab_compare_content = dmc.Container(
                 # GRIGLIA DINAMICA
                 dmc.SimpleGrid(
                     id="dynamic-grid",  # <--- ID IMPORTANTE PER LA CALLBACK
-                    cols={"base": 1, "sm": 2}, # Default iniziale: 2 colonne
+                    cols={"base": 1, "sm": 2},  # Default iniziale: 2 colonne
                     spacing="md",
                     children=[
                         # A e B sempre presenti nel DOM
                         create_upload_slot("a", "blue", "RETE A (Baseline)"),
                         create_upload_slot("b", "orange", "RETE B"),
                         # C e D inizialmente nascosti
-                        html.Div(id="slot-container-c", style={"display": "none"}, children=create_upload_slot("c", "green", "RETE C")),
-                        html.Div(id="slot-container-d", style={"display": "none"}, children=create_upload_slot("d", "red", "RETE D")),
+                        html.Div(id="slot-container-c", style={"display": "none"},
+                                 children=create_upload_slot("c", "green", "RETE C")),
+                        html.Div(id="slot-container-d", style={"display": "none"},
+                                 children=create_upload_slot("d", "red", "RETE D")),
                     ]
                 ),
             ]),
@@ -633,8 +637,10 @@ tab_compare_content = dmc.Container(
             # CONTROLLI DINAMICI (Pulsanti + e -)
             dmc.Center(
                 dmc.Group([
-                    dmc.Button("Rimuovi Rete", id="btn-remove-network", variant="light", color="red", leftSection=DashIconify(icon="mdi:minus"), style={"display": "none"}),
-                    dmc.Button("Aggiungi Rete", id="btn-add-network", variant="light", color="blue", rightSection=DashIconify(icon="mdi:plus"), style={"display": "block"})
+                    dmc.Button("Rimuovi Rete", id="btn-remove-network", variant="light", color="red",
+                               leftSection=DashIconify(icon="mdi:minus"), style={"display": "none"}),
+                    dmc.Button("Aggiungi Rete", id="btn-add-network", variant="light", color="blue",
+                               rightSection=DashIconify(icon="mdi:plus"), style={"display": "block"})
                 ])
             ),
 
@@ -737,7 +743,6 @@ layout_upload = dmc.Container(
     Output("btn-add-network", "style"),
     Output("btn-remove-network", "style"),
     Output("visible-networks-count", "data"),
-
     Input("btn-add-network", "n_clicks"),
     Input("btn-remove-network", "n_clicks"),
     State("visible-networks-count", "data"),
@@ -769,6 +774,7 @@ def manage_network_slots(n_add, n_remove, current_count):
 
     return style_c, style_d, grid_cols, style_btn_add, style_btn_rem, new_count
 
+
 # =============================================================================
 # 6. LAYOUT PAGINA GRAFICO (CON ANIMAZIONE "SIPARIO")
 # =============================================================================
@@ -779,110 +785,6 @@ NODE_METRICS_OPTIONS = [
     {"label": "Strength (Forza)", "value": "strength"},
     {"label": "Betweenness Centrality", "value": "betweenness_centrality"},
 ]
-
-info_button_component = html.Div([
-    dmc.Affix(
-        position={"bottom": 20, "right": 20},
-        zIndex=9999,
-        children=dmc.ActionIcon(
-            DashIconify(icon="mdi:information-variant", width=25),
-            id="info-fab-btn",
-            size="xl",
-            radius="xl",
-            variant="filled",
-            color="blue",
-            style={"boxShadow": "0px 4px 12px rgba(0,0,0,0.2)"}
-        )
-    ),
-    dmc.Affix(
-        position={"bottom": 80, "right": 20},
-        zIndex=9998,
-        children=dmc.Paper(
-            id="info-panel-popup",
-            shadow="xl",
-            radius="md",
-            p="md",
-            withBorder=True,
-            style={
-                "width": "380px",  # Leggermente più largo per il testo
-                "display": "none",
-                "backgroundColor": "rgba(255, 255, 255, 0.98)",
-                "color": "#333"
-            },
-            children=[
-                dmc.Group([
-                    DashIconify(icon="mdi:school", width=22, color="blue"),
-                    dmc.Text("Guida alle Funzionalità", fw=700, size="lg")
-                ], mb="md", pb="xs", style={"borderBottom": "1px solid #eee"}),
-
-                dmc.ScrollArea(
-                    h=450,  # Altezza aumentata per contenere tutto
-                    type="hover",
-                    offsetScrollbars=True,
-                    children=[
-                        dmc.Stack(gap="sm", children=[
-
-                            # 1. NAVIGAZIONE
-                            dmc.Text("🖱️ Navigazione 3D", fw=700, size="sm"),
-                            dmc.Text("• Ruota: Click Sinistro + Trascina", size="xs", c="dimmed"),
-                            dmc.Text("• Sposta: Click Destro + Trascina", size="xs", c="dimmed"),
-                            dmc.Text("• Zoom: Rotella del mouse", size="xs", c="dimmed"),
-
-                            dmc.Divider(),
-
-                            # 2. ANATOMIA E FILTRI ZONA
-                            dmc.Text("🧠 Anatomia e Regioni", fw=700, size="sm"),
-                            dmc.Text(
-                                "• Stile Mesh: Scegli tra 'Intero (Grigio)' per il cervello completo o 'Regioni (Colorate)' per vedere le aree AAL.",
-                                size="xs", c="dimmed"),
-                            dmc.Text(
-                                "• Isola Zona: (Solo in modalità Regioni) Seleziona specifiche aree (es. Frontale, Occipitale) per nascondere il resto.",
-                                size="xs", c="dimmed"),
-
-                            dmc.Divider(),
-
-                            # 3. METRICHE E COLORI
-                            dmc.Text("🎨 Aspetto dei Nodi", fw=700, size="sm"),
-                            dmc.Text(
-                                "• Colore/Dimensione: Configura i nodi in base a metriche come Grado (Degree), Forza (Strength) o Comunità.",
-                                size="xs", c="dimmed"),
-                            dmc.Text("• Slider: Regola la scala dei colori e la dimensione dei nodi in tempo reale.",
-                                     size="xs", c="dimmed"),
-
-                            dmc.Divider(),
-
-                            # 4. ANALISI RETE
-                            dmc.Text("🕸️ Filtri di Rete", fw=700, size="sm"),
-                            dmc.Text(
-                                "• Risoluzione (Louvain): Sposta lo slider per ricalcolare le comunità (0.5 = poche/grandi, 2.0 = molte/piccole).",
-                                size="xs", c="dimmed"),
-                            dmc.Text("• Peso Minimo: Nasconde gli archi con peso inferiore alla soglia scelta.",
-                                     size="xs", c="dimmed"),
-
-                            dmc.Divider(),
-
-                            # 5. CONFRONTO COMUNITA'
-                            dmc.Text("🔗 Confronto A ↔ B", fw=700, size="sm"),
-                            dmc.Text(
-                                "Seleziona due comunità diverse (es. Comm 1 e Comm 3) e premi il pulsante. Il grafico isolerà ed evidenzierà in arancione solo le connessioni che collegano i due gruppi.",
-                                size="xs", c="dimmed"),
-
-                            dmc.Divider(),
-
-                            # 6. INTERAZIONE E DATI
-                            dmc.Text("📊 Interazione e Dettagli", fw=700, size="sm"),
-                            dmc.Text(
-                                "• Click Nodo: Mostra dettagli nel pannello sinistro e la lista delle connessioni nel pannello destro.",
-                                size="xs", c="dimmed"),
-                            dmc.Text("• Export: Scarica l'immagine (PNG) o i dati del grafico (JSON).", size="xs",
-                                     c="dimmed"),
-                        ])
-                    ]
-                )
-            ]
-        )
-    )
-])
 
 layout_graph = html.Div(
     id="graph-page-container",
@@ -919,9 +821,6 @@ layout_graph = html.Div(
 
         # --- 2. UI REALE ---
         html.Div(id="final-header-wrapper", style={"opacity": 0}, children=header_component),
-
-        info_button_component,
-        dcc.Store(id='info-panel-state', data=False),
 
         html.Div(
             id="main-graph-content",
@@ -1440,31 +1339,66 @@ layout_simulation = html.Div(
 
 layout_compare = html.Div(
     id="graph-page-container",
-    style={"minHeight": "100vh", "backgroundColor": "#f8f9fa", "paddingTop": "120px", "paddingBottom": "50px"},
+    style={"minHeight": "100vh", "backgroundColor": "#f8f9fa", "transition": "background-color 0.3s ease"},
     children=[
         header_component,
-        dmc.Container(fluid=True, px="xl", children=[
-            dmc.Group([
-                DashIconify(icon="mdi:clipboard-pulse", width=40, color="orange"),
-                dmc.Title("Report Analisi Comparativa", order=2, c="dark")
-            ], mb="lg"),
 
-            # Qui verranno iniettati i risultati dalla callback
-            dcc.Loading(
-                type="cube", color="orange",
-                children=html.Div(id="stats-output-container", children=[
-                    # Placeholder se l'utente arriva qui senza dati
-                    dmc.Alert("Carica i dati dalla Home Page > Confronto Reti per vedere i risultati.",
-                              title="Nessun dato", color="gray")
-                ])
-            )
-        ])
+        dmc.Container(
+            fluid=True,
+            # MODIFICA FONDAMENTALE: size="100%" sblocca la larghezza massima
+            size="100%",
+            # Riduciamo leggermente i margini laterali (px) per guadagnare spazio
+            px="md",
+            style={
+                "paddingTop": "140px",
+                "paddingBottom": "50px",
+                "maxWidth": "100%",  # Forza bruta per occupare tutto lo schermo
+                "width": "100%"
+            },
+            children=[
+                dmc.Group([
+                    DashIconify(icon="mdi:clipboard-pulse", width=40, color="orange"),
+                    dmc.Title("Report Analisi Comparativa", order=2, c="dimmed")
+                ], mb="lg", px="md"),  # Aggiunto padding extra al titolo per allineamento
+
+                # Loading Centrato
+                dcc.Loading(
+                    type="cube",
+                    color="orange",
+                    parent_style={
+                        "minHeight": "60vh",
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "alignItems": "center",
+                        "width": "100%"  # Assicura che il loader copra tutto
+                    },
+                    children=html.Div(
+                        id="stats-output-container",
+                        style={"width": "100%"},  # I grafici generati prenderanno il 100%
+                        children=[
+                            dmc.Center(
+                                dmc.Alert(
+                                    "Carica i dati dalla Home Page > Confronto Reti per vedere i risultati.",
+                                    title="Nessun dato in memoria",
+                                    color="gray",
+                                    variant="outline",
+                                    icon=DashIconify(icon="mdi:database-search")
+                                )
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
     ]
 )
 
 # =============================================================================
-# 7. LAYOUT PRINCIPALE (CON CHATBOT GLOBALE)
+# 7. LAYOUT PRINCIPALE (CON CHATBOT UNIFICATO INTELLIGENTE)
 # =============================================================================
+
+# Rimuoviamo il vecchio info_button_component dal layout graph
+# (Assicurati di rimuoverlo anche dalla variabile layout_graph se era lì referenziato)
 
 # Stile del bottone galleggiante (SPOSTATO A SINISTRA)
 fab_style = {
@@ -1472,10 +1406,10 @@ fab_style = {
     "boxShadow": "0 4px 12px rgba(0,0,0,0.15)"
 }
 
-# Stile della finestra di chat (SPOSTATA A SINISTRA)
+# Stile della finestra di chat
 chat_window_style = {
-    "position": "fixed", "bottom": "100px", "left": "30px", "width": "380px", "height": "500px",
-    "backgroundColor": "white", "borderRadius": "12px", "boxShadow": "0 8px 24px rgba(0,0,0,0.2)",
+    "position": "fixed", "bottom": "100px", "left": "30px", "width": "400px", "height": "550px",
+    "backgroundColor": "white", "borderRadius": "12px", "boxShadow": "0 8px 32px rgba(0,0,0,0.2)",
     "zIndex": 9998, "display": "none", "flexDirection": "column", "overflow": "hidden",
     "border": "1px solid #e9ecef"
 }
@@ -1485,18 +1419,19 @@ app.layout = dmc.MantineProvider(
     forceColorScheme="light",
     theme={"colorScheme": "light"},
     children=[
-        # --- STORES (Tutti quelli di prima) ---
+        # --- STORES ---
         dcc.Store(id='store-node-data'), dcc.Store(id='store-adj-matrix'), dcc.Store(id='store-edge-coords'),
         dcc.Store(id='store-analysis-report'), dcc.Store(id='store-clicked-node'), dcc.Store(id='store-camera-state'),
         dcc.Store(id='store-valid-color-range'), dcc.Store(id='store-valid-size-scale'),
         dcc.Store(id='store-inter-comm-state', data={"active": False}),
+        # Confronto Stores
         dcc.Store(id='store-map-a'), dcc.Store(id='store-edge-a'), dcc.Store(id='name-edge-a'),
         dcc.Store(id='store-map-b'), dcc.Store(id='store-edge-b'), dcc.Store(id='name-edge-b'),
         dcc.Store(id='store-map-c'), dcc.Store(id='store-edge-c'), dcc.Store(id='name-edge-c'),
         dcc.Store(id='store-map-d'), dcc.Store(id='store-edge-d'), dcc.Store(id='name-edge-d'),
         dcc.Store(id='visible-networks-count', data=2),
 
-        # STORE CHAT (Memoria conversazione)
+        # STORE CHAT
         dcc.Store(id="chat-history", data=[]),
         dcc.Store(id="chat-is-open", data=False),
 
@@ -1506,40 +1441,63 @@ app.layout = dmc.MantineProvider(
         dcc.Download(id="download-png"),
         dcc.Download(id="download-json"),
 
-        # --- CHATBOT UI ---
-        # 1. Bottone Galleggiante (FAB)
-        dmc.ActionIcon(
-            DashIconify(icon="mdi:robot-excited-outline", width=30),
-            id="btn-toggle-chat", size="xl", radius="xl", color="indigo", variant="filled",
-            style=fab_style
+        # --- CHATBOT INTELLIGENTE ---
+        # 1. Bottone Galleggiante
+        dmc.Indicator(
+            label="AI", color="red", size=12, offset=5,
+            children=dmc.ActionIcon(
+                DashIconify(icon="mdi:robot-excited-outline", width=32),
+                id="btn-toggle-chat", size="xl", radius="xl", color="indigo", variant="filled",
+                style=fab_style
+            )
         ),
 
         # 2. Finestra Chat
         html.Div(id="chat-window", style=chat_window_style, children=[
             # Header Chat
             dmc.Group(
-                justify="space-between", p="xs", bg="indigo", c="white",
+                justify="space-between", p="md", bg="indigo", c="white",
                 children=[
-                    dmc.Group([DashIconify(icon="mdi:brain"), dmc.Text("NeuroAssistant AI", fw=700, size="sm")]),
+                    dmc.Group([
+                        DashIconify(icon="mdi:brain-electricity", width=25),
+                        dmc.Stack(gap=0, children=[
+                            dmc.Text("NeuroAssistant AI", fw=700, size="sm"),
+                            dmc.Text("Context Aware", size="xs", c="gray.3")
+                        ])
+                    ]),
                     dmc.ActionIcon(DashIconify(icon="mdi:close"), id="btn-close-chat", variant="transparent", c="white")
                 ]
             ),
 
-            # Area Messaggi (Scrollabile)
+            # Sub-Header con Suggerimenti Rapidi
+            dmc.Group(
+                bg="gray.1", p="xs", justify="center",
+                style={"borderBottom": "1px solid #dee2e6"},
+                children=[
+                    dmc.Button(
+                        "💡 Cosa posso fare qui?",
+                        id="btn-chat-help-context",
+                        variant="subtle", color="orange", size="xs",
+                        leftSection=DashIconify(icon="mdi:lightbulb-on")
+                    )
+                ]
+            ),
+
+            # Area Messaggi
             dmc.ScrollArea(
                 id="chat-scroll-area",
-                style={"flex": 1, "padding": "15px", "backgroundColor": "#f8f9fa"},
+                style={"flex": 1, "padding": "15px", "backgroundColor": "white"},
                 type="always",
                 children=dmc.Stack(id="chat-messages-container", gap="sm")
             ),
 
             # Input Area
             dmc.Group(
-                p="xs", bg="white", style={"borderTop": "1px solid #eee"},
+                p="xs", bg="gray.0", style={"borderTop": "1px solid #eee"},
                 children=[
                     dmc.TextInput(
-                        id="chat-input", placeholder="Chiedi qualcosa sulle reti...",
-                        style={"flex": 1}, radius="xl", rightSection=None
+                        id="chat-input", placeholder="Chiedi o digita 'aiuto'...",
+                        style={"flex": 1}, radius="xl",
                     ),
                     dmc.ActionIcon(
                         DashIconify(icon="mdi:send"), id="btn-send-chat",
@@ -1550,6 +1508,7 @@ app.layout = dmc.MantineProvider(
         ])
     ]
 )
+
 
 # =============================================================================
 # 8. CALLBACK: Routing e Navigazione
@@ -1562,10 +1521,11 @@ def display_page(path):
         return layout_graph
     elif path == "/simulation":
         return layout_simulation
-    elif path == "/compare":   # <--- NUOVA ROTTA
+    elif path == "/compare":  # <--- NUOVA ROTTA
         return layout_compare
     else:
         return layout_upload
+
 
 # =============================================================================
 # 8b. CALLBACK: Gestione TEMA
@@ -1664,19 +1624,15 @@ def enable_start_buttons(map_c, edge_c, map_sim_c, edge_sim_c):
     Output("store-edge-coords", "data"),
     Output("store-analysis-report", "data"),
     Output("url", "pathname"),
-
     # Input dai DUE bottoni di avvio
     Input("start-button", "n_clicks"),
     Input("btn-load-and-go-sim", "n_clicks"),
-
     # State dai file Visualizzazione
     State("upload-mapping", "contents"),
     State("upload-edges", "contents"),
-
     # State dai file Simulazione
     State("upload-mapping-sim", "contents"),
     State("upload-edges-sim", "contents"),
-
     prevent_initial_call=True
 )
 def run_analysis(n_viz, n_sim, map_c, edge_c, map_sim_c, edge_sim_c):
@@ -2027,19 +1983,13 @@ def display_node_details(clicked_index, node_json):
 
         details_md = f"""
         **ROI:** {node_data['roi_name']}
-
         **Zona:** {node_data.get('region', 'N/A')}
-
         ---
-
         * **Indice (ID interno):** {idx}
         * **ID Atlas:** {node_data['roi_id']}
         * **Community:** {int(node_data['community'])}
-
         ---
-
         **METRICHE DI RETE**
-
         * **Grado (Degree):** {int(node_data['degree'])}
         * **Forza (Strength):** {node_data['strength']:.2f}
         * **Betweenness Centrality:** {node_data['betweenness_centrality']:.4f}
@@ -2278,14 +2228,15 @@ def update_inter_community_card(inter_comm_state, node_json, adj_json):
 
 @app.callback(
     Output("brain-connectome-web", "figure"),
-
     # --- INPUTS (Scatenano l'aggiornamento automatico) ---
     Input("update-graph-btn", "n_clicks"),
     Input("store-inter-comm-state", "data"),
     Input("theme-switch", "checked"),
-
+    # --- MODIFICA QUI: SPOSTATO DA STATE A INPUT ---
+    Input("store-clicked-node", "data"),
+    # -----------------------------------------------
     # -- Filtri che triggerano update --
-    Input("brain-style-selector", "value"),  # <--- NUOVO INPUT: SELETTORE STILE CERVELLO
+    Input("brain-style-selector", "value"),
     Input("region-filter", "value"),
     Input("community-filter", "value"),
     Input("weight-threshold", "value"),
@@ -2297,9 +2248,8 @@ def update_inter_community_card(inter_comm_state, node_json, adj_json):
     Input("edge-width-slider", "value"),
     Input("brain-opacity-slider", "value"),
     Input("edge-opacity-slider", "value"),
-
-    # --- STATES ---
-    State("store-clicked-node", "data"),
+    # --- STATES (Dati letti passivamente) ---
+    # NOTA: store-clicked-node è stato rimosso da qui
     State("store-node-data", "data"),
     State("store-adj-matrix", "data"),
     State("store-edge-coords", "data"),
@@ -2310,12 +2260,12 @@ def update_inter_community_card(inter_comm_state, node_json, adj_json):
 def update_figure(
         # --- INPUTS ---
         n_clicks_update, inter_comm_state, is_dark_theme,
-        brain_style, selected_regions, selected_communities, weight_thr,  # brain_style aggiunto
+        clicked_node,  # <--- IMPORTANTE: clicked_node ora arriva qui (è il 4° Input)
+        brain_style, selected_regions, selected_communities, weight_thr,
         show_brain, show_edges, show_highlight,
         color_metric, size_metric, default_edge_width, brain_opacity, edge_opacity,
-
         # --- STATES ---
-        clicked_node,
+        # clicked_node NON è più qui tra gli State
         node_json, adj_json, edge_coords_json, camera_state, color_range_val_store, size_scale_val_store
 ):
     text_color = "white" if is_dark_theme else "black"
@@ -2676,6 +2626,7 @@ def populate_simulation_dropdown(node_json, adj_json):
         print("Errore popolamento dropdown:", e)
         return []
 
+
 # 18b. CORE ENGINE: Esegue la simulazione
 @app.callback(
     Output("sim-impact-graph", "figure"),
@@ -2910,20 +2861,16 @@ def update_home_compare_filenames(*args):
     Output("name-edge-c", "data"), Output("name-edge-d", "data"),
     # Output URL
     Output("url", "pathname", allow_duplicate=True),
-
     # Input
     Input("btn-launch-compare", "n_clicks"),
-
     # State (Contenuti)
     State("home-map-a", "contents"), State("home-edge-a", "contents"),
     State("home-map-b", "contents"), State("home-edge-b", "contents"),
     State("home-map-c", "contents"), State("home-edge-c", "contents"),
     State("home-map-d", "contents"), State("home-edge-d", "contents"),
-
     # State (Nomi File)
     State("home-edge-a", "filename"), State("home-edge-b", "filename"),
     State("home-edge-c", "filename"), State("home-edge-d", "filename"),
-
     prevent_initial_call=True
 )
 def launch_comparison(n, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, nd):
@@ -2936,6 +2883,7 @@ def launch_comparison(n, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, nd):
 
     # Ritorna: 8 contenuti + 4 nomi + 1 url
     return ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, nd, "/compare"
+
 
 # =============================================================================
 # 19. CALLBACK: LOGICA CONFRONTO RETI (COMPARATIVE CONNECTOMICS)
@@ -2955,32 +2903,27 @@ def update_compare_feedback(ma, ea, mb, eb):
 
 
 # =============================================================================
-# 19b. CORE ENGINE MULTI-RETE: VERSIONE DEFINITIVA (Nomi Reali + Top 10 Nodi)
+# 19b. CORE ENGINE: PROMPT ANALITICO SENIOR + GRAFICI AGGIORNATI + FULL METRICS
 # =============================================================================
 @app.callback(
     Output("stats-output-container", "children", allow_duplicate=True),
     Input("url", "pathname"),
-
     # Dati dagli Store
     State("store-map-a", "data"), State("store-edge-a", "data"),
     State("store-map-b", "data"), State("store-edge-b", "data"),
     State("store-map-c", "data"), State("store-edge-c", "data"),
     State("store-map-d", "data"), State("store-edge-d", "data"),
-
     # Nomi File
     State("name-edge-a", "data"), State("name-edge-b", "data"),
     State("name-edge-c", "data"), State("name-edge-d", "data"),
-
     prevent_initial_call='initial_duplicate'
 )
 def render_comparison_results(path, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, nd):
     if path != "/compare": return dash.no_update
 
-    # Verifica Dati Minimi
     if not (ma and ea and mb and eb):
-        return dmc.Center(dmc.Alert("Dati mancanti. Torna alla Home.", color="red", variant="outline"), pt=50)
-
-    print(">>> [DEBUG] Analisi Comparativa: Calcolo Metriche e Nomi Anatomici...")
+        return dmc.Center(dmc.Alert("Dati mancanti. Carica almeno Rete A e Rete B.", color="red", variant="outline"),
+                          pt=50)
 
     try:
         # --- 1. SETUP ---
@@ -2992,43 +2935,31 @@ def render_comparison_results(path, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, 
         ]
 
         networks = []
-        errors = []
 
         # --- 2. ELABORAZIONE DATI ---
         for item in raw_inputs:
             if item['m'] and item['e']:
                 try:
-                    # A. Parsing
+                    # Parsing Nodi
                     df_m = parse_file_contents(item['m'], file_type="nodes")
-                    try:
-                        df_e = parse_file_contents(item['e'], file_type="edges")
-                    except:
-                        raise ValueError("Errore lettura file Edges")
-
-                    if df_m is None or df_e is None: raise ValueError("File non validi o vuoti")
-
-                    # B. Nome Rete
-                    clean_name = item['n'].rsplit('.', 1)[0] if item['n'] else f"Rete {item['id']}"
-                    clean_name = clean_name[:20] + "..." if len(clean_name) > 22 else clean_name
-
-                    # C. Mappatura Nomi (IMPORTANTE PER IL GRAFICO)
-                    # Cerchiamo la colonna del nome anatomico
                     name_col = 'roi_name' if 'roi_name' in df_m.columns else df_m.columns[1]
                     id_col = 'roi_id' if 'roi_id' in df_m.columns else df_m.columns[0]
 
-                    # Creiamo un dizionario {Indice_Grafo: "Nome Anatomico"}
-                    # NetworkX usa indici 0,1,2... noi mappiamo questi indici ai nomi reali
+                    id_map = {}
                     node_names_map = {}
-                    id_map = {}  # Mappa ID file -> Indice 0,1,2
-
                     for i, row in df_m.iterrows():
                         real_id = row[id_col]
-                        real_name = str(row[name_col])
                         id_map[real_id] = i
-                        node_names_map[i] = real_name
+                        node_names_map[i] = str(row[name_col])
 
-                    # D. Costruzione Grafo
+                    # Parsing Edges
+                    df_e = parse_file_contents(item['e'], file_type="edges")
+
+                    # FIX NODI: Inizializza grafo con TUTTI i nodi (per avere sempre 164 nodi)
                     G = nx.Graph()
+                    for idx in node_names_map.keys():
+                        G.add_node(idx)
+
                     src_col = 'source' if 'source' in df_e.columns else df_e.columns[0]
                     tgt_col = 'target' if 'target' in df_e.columns else df_e.columns[1]
                     w_col = 'weight' if 'weight' in df_e.columns else None
@@ -3038,216 +2969,300 @@ def render_comparison_results(path, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, 
                             u = id_map.get(row[src_col])
                             v = id_map.get(row[tgt_col])
                             w = float(row[w_col]) if w_col else 1.0
-                            if u is not None and v is not None: G.add_edge(u, v, weight=w)
+                            if u is not None and v is not None:
+                                G.add_edge(u, v, weight=w)
                         except:
                             continue
 
-                    # E. Calcolo Metriche
+                    # --- METRICHE AVANZATE (CALCOLO COMPLETO) ---
                     n_nodes = G.number_of_nodes()
+                    n_edges = G.number_of_edges()
                     dens = nx.density(G)
-                    eff = nx.global_efficiency(G)
-
-                    if nx.is_connected(G):
-                        avg_path = nx.average_shortest_path_length(G, weight='weight')
-                    else:
-                        Gc = G.subgraph(max(nx.connected_components(G), key=len))
-                        avg_path = nx.average_shortest_path_length(Gc, weight='weight')
-
                     clust = nx.average_clustering(G, weight='weight')
                     trans = nx.transitivity(G)
 
-                    try:
-                        part = community_louvain.best_partition(G, weight='weight')
-                        mod = community_louvain.modularity(part, G, weight='weight')
-                        n_comm = len(set(part.values()))
-                    except:
-                        mod, n_comm = 0, 0
-
-                    # Centralità (media)
-                    bet_vals = list(nx.betweenness_centrality(G, weight='weight').values())
-                    clo_vals = list(nx.closeness_centrality(G).values())
-                    avg_bet = np.mean(bet_vals) if bet_vals else 0
-                    avg_clo = np.mean(clo_vals) if clo_vals else 0
+                    if nx.is_connected(G) and n_edges > 0:
+                        eff = nx.global_efficiency(G)
+                        avg_path = nx.average_shortest_path_length(G, weight='weight')
+                    elif n_edges > 0:
+                        Gc = G.subgraph(max(nx.connected_components(G), key=len))
+                        eff = nx.global_efficiency(G)
+                        avg_path = nx.average_shortest_path_length(Gc, weight='weight')
+                    else:
+                        eff = 0
+                        avg_path = 0
 
                     try:
                         assort = nx.degree_assortativity_coefficient(G, weight='weight')
                     except:
                         assort = 0
 
+                    try:
+                        if n_edges > 0:
+                            part = community_louvain.best_partition(G, weight='weight')
+                            mod = community_louvain.modularity(part, G, weight='weight')
+                            n_comm = len(set(part.values()))
+                        else:
+                            mod, n_comm = 0, 0
+                    except:
+                        mod, n_comm = 0, 0
+
+                    # Top Hubs (per AI e Grafici)
+                    degree_dict = dict(G.degree(weight='weight'))
+                    if n_edges > 0:
+                        top_indices = sorted(degree_dict, key=degree_dict.get, reverse=True)[:6]
+                        top_hubs_str = ", ".join(
+                            [node_names_map.get(i, str(i)).split('(')[0].strip() for i in top_indices])
+                    else:
+                        top_hubs_str = "N/A"
+
+                    clean_name = item['n'] if item['n'] else f"Rete {item['id']}"
+                    clean_name_display = clean_name.replace(".csv", "").replace(".xlsx", "").replace(".txt", "")
+
                     networks.append({
                         'id': item['id'],
-                        'name': clean_name,
+                        'name': clean_name_display,
                         'color': item['color'],
                         'G': G,
-                        'node_names': node_names_map,  # Salviamo i nomi per il grafico!
+                        'node_names': node_names_map,
+                        'degrees': degree_dict,  # Per grafico barre
                         'metrics': {
-                            "Nodi": n_nodes, "Connessioni": G.number_of_edges(), "Densità": dens,
-                            "Efficienza Globale": eff, "Cammino Medio (L)": avg_path,
-                            "Clustering Coeff.": clust, "Transitivity": trans,
-                            "Modularità (Q)": mod, "Num. Comunità": n_comm,
-                            "Betweenness (avg)": avg_bet, "Closeness (avg)": avg_clo,
-                            "Assortatività": assort
+                            "Nodi": n_nodes,
+                            "Connessioni": n_edges,
+                            "Densità": dens,
+                            "Efficienza Globale": eff,
+                            "Cammino Medio (L)": avg_path,
+                            "Clustering Coeff.": clust,
+                            "Transitivity": trans,
+                            "Modularità (Q)": mod,
+                            "Num. Comunità": n_comm,
+                            "Assortatività": assort,
+                            "Hubs Principali": top_hubs_str
                         }
                     })
                 except Exception as ex:
-                    print(f"Err Rete {item['id']}: {ex}")
-                    errors.append(f"{item['id']}: {str(ex)}")
+                    print(f"Errore rete {item['id']}: {ex}")
                     continue
 
         if len(networks) < 2:
-            return dmc.Alert(f"Errore: servono almeno 2 reti valide. {errors}", color="red")
+            return dmc.Alert("Servono almeno 2 reti valide.", color="red")
 
-        base = networks[0]  # Rete A
+        # --- 3. INTELLIGENZA ARTIFICIALE (PROMPT ANALITICO PURO - RICHESTO DA UTENTE) ---
 
-        # --- 3. REPORT CLINICO NARRATIVO ---
-        report_cards = []
-        for net in networks[1:]:
-            mA = base['metrics']
-            mB = net['metrics']
+        data_summary = ""
+        for net in networks:
+            data_summary += f"""
+            [DATI RETE: {net['name']}]
+            - Efficienza (Integrazione): {net['metrics']['Efficienza Globale']:.3f}
+            - Modularità (Segregazione): {net['metrics']['Modularità (Q)']:.3f}
+            - Densità (Costo): {net['metrics']['Densità']:.3f}
+            - Hubs: {net['metrics']['Hubs Principali']}
+            """
 
-            def get_d(k):
-                va, vb = mA.get(k, 0), mB.get(k, 0)
-                if va == 0: return 0.0
-                return ((vb - va) / va) * 100
+        system_prompt = f"""
+        Sei un Neuroscienziato Computazionale Senior che scrive un'analisi tecnica comparativa.
 
-            d_eff = get_d("Efficienza Globale")
-            d_mod = get_d("Modularità (Q)")
-            d_dens = get_d("Densità")
-            d_path = get_d("Cammino Medio (L)")
+        OBIETTIVO:
+        Confrontare le architetture di rete fornite basandosi SOLO sui dati numerici e topologici.
 
-            if d_eff < -10:
-                status, color_st, icon_st = "Deterioramento Significativo", "red", "mdi:alert-octagon"
-                intro = f"Si osserva una **compromissione critica** dell'architettura di rete in {net['name']}."
-            elif d_eff < -2:
-                status, color_st, icon_st = "Lieve Calo Funzionale", "orange", "mdi:alert"
-                intro = f"Si nota una **leggera riduzione** della capacità integrativa in {net['name']}."
-            elif d_eff > 5:
-                status, color_st, icon_st = "Miglioramento / Iper-Connessione", "green", "mdi:check-decagram"
-                intro = f"La rete {net['name']} mostra un **aumento dell'efficienza globale**."
-            else:
-                status, color_st, icon_st = "Stabilità Topologica", "blue", "mdi:equal"
-                intro = f"Il profilo topologico di {net['name']} appare **stabile** rispetto alla baseline."
+        REGOLE FERREE:
+        1.  **NESSUNA DIAGNOSI:** Non usare mai parole come "Paziente", "Malattia", "Alzheimer", "Depressione" a meno che non siano scritte esplicitamente nel nome del file. Tratta i file come "Condizioni Sperimentali".
+        2.  **CONFRONTO DIRETTO:** Non descrivere le reti una per una. Confrontale. Usa frasi come: "Rispetto alla configurazione A, la configurazione B mostra..."
+        3.  **SIGNIFICATO DEI DATI:**
+            - Efficienza alta -> Alta capacità di integrazione delle informazioni.
+            - Modularità alta -> Alta segregazione funzionale (aree isolate).
+            - Cambio Hubs -> Riorganizzazione della centralità funzionale.
 
-            p_int = f"**Integrazione:** L'Efficienza è variata del **{d_eff:+.2f}%**."
-            if d_path > 5: p_int += f" Il cammino medio è aumentato (+{d_path:.2f}%), indicando rallentamenti."
+        STRUTTURA DEL REPORT (MARKDOWN PROFESSIONALE):
 
-            p_seg = f"**Segregazione:** La Modularità varia del **{d_mod:+.2f}%**."
-            if d_mod < -5: p_seg += " Questo suggerisce una perdita di specializzazione funzionale."
+        **TITOLO:** Un titolo tecnico ma elegante (es. "Analisi Differenziale della Topologia di Rete" o "Dinamiche di Riconfigurazione Strutturale").
 
-            report_cards.append(
-                dmc.Card(withBorder=True, shadow="sm", mb="md", style={"borderLeft": f"5px solid {color_st}"},
-                         children=[
-                             dmc.Group([DashIconify(icon=icon_st, color=color_st, width=25), dmc.Text(status, fw=700)],
-                                       mb="xs"),
-                             dcc.Markdown(f"{intro}\n\n{p_int}\n\n{p_seg}\n\n**Densità:** {d_dens:+.2f}%")
-                         ])
+        **1. Analisi dell'Integrazione Globale**
+        (Confronta Efficienza e Densità. Chi comunica meglio? Chi è più costoso metabolicamente?)
+
+        **2. Architettura Modulare e Segregazione**
+        (Confronta la Modularità. Quale rete è più frammentata? Quale è più coesa?)
+
+        **3. Ridislocazione dei Centri Funzionali (Hubs)**
+        (Osserva i nomi degli Hubs. Cita esplicitamente quali aree guidano la rete A e quali guidano la rete B. Spiega se c'è uno spostamento posteriore-anteriore o viceversa).
+
+        **4. Sintesi Conclusiva**
+        (Un verdetto finale sulle differenze strutturali macroscopiche).
+
+        Usa un linguaggio accademico, fluido e preciso. Evita ripetizioni.
+
+        DATI DA ANALIZZARE:
+        {data_summary}
+        """
+
+        try:
+            completion = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "system", "content": system_prompt}],
+                temperature=0.5,  # Temperatura più bassa per essere più rigorosi
+                max_tokens=2000
             )
+            ai_report_text = completion.choices[0].message.content
+        except Exception as e:
+            ai_report_text = f"Errore generazione report: {str(e)}"
 
-        # --- 4. GRAFICI ---
-        # A. RADAR
+        # --- 4. VISUALIZZAZIONE AGGIORNATA ---
+
+        # A. GRAFICO RADAR (Legenda Laterale)
         radar_keys = ["Efficienza Globale", "Clustering Coeff.", "Modularità (Q)", "Transitivity", "Densità"]
         fig_radar = go.Figure()
+
+        max_vals = {}
         for k in radar_keys:
-            vals = [n['metrics'][k] for n in networks]
-            mx = max(vals) if vals and max(vals) > 0 else 1
-            for n in networks: n['metrics'][f"{k}_n"] = n['metrics'][k] / mx
+            vals = [n['metrics'].get(k, 0) for n in networks]
+            max_vals[k] = max(vals) if vals and max(vals) > 0 else 1
 
         for n in networks:
-            vals = [n['metrics'][f"{k}_n"] for k in radar_keys]
-            fig_radar.add_trace(
-                go.Scatterpolar(r=vals, theta=radar_keys, fill='toself', name=n['name'], line_color=n['color']))
-        fig_radar.update_layout(polar=dict(radialaxis=dict(visible=False)), margin=dict(t=30, b=20), height=350,
-                                template="plotly_white")
+            r_vals = [n['metrics'].get(k, 0) / max_vals[k] for k in radar_keys]
+            fig_radar.add_trace(go.Scatterpolar(
+                r=r_vals + [r_vals[0]],
+                theta=radar_keys + [radar_keys[0]],
+                fill='toself', name=n['name'], line_color=n['color'], opacity=0.5
+            ))
 
-        # B. BAR CHART - TOP 10 NODI (CON NOMI REALI)
-        target = networks[1] if len(networks) > 1 else networks[0]
+        fig_radar.update_layout(
+            polar=dict(radialaxis=dict(visible=False, range=[0, 1])),
+            margin=dict(t=30, b=30, l=40, r=0),
+            height=350,
+            # MODIFICA RICHIESTA: Legenda laterale
+            legend=dict(orientation="v", y=0.5, x=1.1, xanchor="left", yanchor="middle"),
+            paper_bgcolor="rgba(0,0,0,0)",
+            title=dict(text="Impronta Topologica", x=0.5)
+        )
 
-        # Calcolo Strength per nodo
-        degA = dict(base['G'].degree(weight='weight'))
-        degB = dict(target['G'].degree(weight='weight'))
+        # B. BAR CHART MULTI-RETE (Grouped Bar Chart - Tutte le reti)
+        # 1. Calcolo variabilità nodi su TUTTE le reti per trovare i più interessanti
+        all_node_ids = set()
+        for n in networks:
+            all_node_ids.update(n['degrees'].keys())
 
-        diffs = []
-        # Iteriamo sugli indici presenti nel grafo A
-        for idx in dict(base['G'].nodes()):
-            val_a = degA.get(idx, 0)
-            val_b = degB.get(idx, 0)
-            delta = val_b - val_a
+        node_variability = []
+        for nid in all_node_ids:
+            degs = [n['degrees'].get(nid, 0) for n in networks]
+            # Varianza
+            mean_d = sum(degs) / len(degs)
+            variance = sum([(x - mean_d) ** 2 for x in degs]) / len(degs)
 
-            # Recuperiamo il nome reale dalla mappa salvata
-            real_name = base['node_names'].get(idx, f"Nodo {idx}")
+            name_str = networks[0]['node_names'].get(nid, str(nid))
+            clean_name = name_str.split('(')[0][:20]
 
-            diffs.append({'name': real_name, 'val_a': val_a, 'val_b': val_b, 'abs_delta': abs(delta)})
+            node_variability.append({'id': nid, 'name': clean_name, 'var': variance})
 
-        # Ordina per cambiamento maggiore
-        diffs.sort(key=lambda x: x['abs_delta'], reverse=True)
-        top_10 = diffs[:10]
+        node_variability.sort(key=lambda x: x['var'], reverse=True)
+        top_variable_nodes = node_variability[:6]
 
         fig_bar = go.Figure()
-        # Barre Rete A
-        fig_bar.add_trace(go.Bar(
-            x=[d['val_a'] for d in top_10], y=[d['name'] for d in top_10],
-            name=base['name'], orientation='h', marker_color=base['color']
-        ))
-        # Barre Rete B
-        fig_bar.add_trace(go.Bar(
-            x=[d['val_b'] for d in top_10], y=[d['name'] for d in top_10],
-            name=target['name'], orientation='h', marker_color=target['color']
-        ))
+        # MODIFICA RICHIESTA: Una barra per ogni rete per ogni nodo (confronto totale)
+        for i, net in enumerate(networks):
+            y_vals = []
+            x_names = []
+            for item in top_variable_nodes:
+                x_names.append(item['name'])
+                y_vals.append(net['degrees'].get(item['id'], 0))
+
+            fig_bar.add_trace(go.Bar(
+                name=net['name'],
+                x=y_vals,
+                y=x_names,
+                orientation='h',
+                marker_color=net['color']
+            ))
 
         fig_bar.update_layout(
-            title=f"Top 10 Nodi più variati ({target['name']} vs {base['name']})",
-            margin=dict(t=40, b=40, l=150),  # Margine sinistro per i nomi lunghi
+            title=dict(text="Hubs con maggiore variabilità (Confronto Totale)", x=0.5),
+            margin=dict(l=10, r=10, t=40, b=20),
             height=350,
-            template="plotly_white",
-            barmode='group',
-            xaxis_title="Strength (Connettività Totale)",
-            yaxis=dict(autorange="reversed")  # Nodi più importanti in alto
+            yaxis=dict(autorange="reversed"),
+            barmode='group',  # Fondamentale per vedere tutte le reti
+            plot_bgcolor="rgba(0,0,0,0)",
+            legend=dict(orientation="v", y=0.5, x=1.1)
         )
 
-        # --- 5. TABELLE COMPLETE ---
+        # C. TABELLE METRICHE (TUTTE LE METRICHE)
         def make_table(net):
+            # MODIFICA RICHIESTA: Elenco completo
+            keys_show = [
+                ("Nodi", "{:.0f}"),
+                ("Connessioni", "{:.0f}"),
+                ("Densità", "{:.4f}"),
+                ("Efficienza Globale", "{:.4f}"),
+                ("Cammino Medio (L)", "{:.4f}"),
+                ("Clustering Coeff.", "{:.4f}"),
+                ("Transitivity", "{:.4f}"),
+                ("Modularità (Q)", "{:.4f}"),
+                ("Num. Comunità", "{:.0f}"),
+                ("Assortatività", "{:.4f}")
+            ]
+
             rows = []
-            keys_ordered = ["Nodi", "Connessioni", "Densità", "Efficienza Globale", "Cammino Medio (L)",
-                            "Clustering Coeff.",
-                            "Modularità (Q)", "Num. Comunità", "Betweenness (avg)", "Closeness (avg)", "Assortatività"]
-            for k in keys_ordered:
-                v = net['metrics'].get(k, 0)
-                fmt = "{:.4f}" if isinstance(v, float) else "{}"
-                rows.append(html.Tr([html.Td(k, style={"fontSize": "11px"}), html.Td(fmt.format(v),
-                                                                                     style={"textAlign": "right",
-                                                                                            "fontWeight": "bold",
-                                                                                            "fontSize": "11px"})]))
+            for k_label, fmt in keys_show:
+                val = net['metrics'].get(k_label, 0)
+                rows.append(html.Tr([
+                    html.Td(k_label, style={"color": "gray", "fontSize": "11px", "padding": "3px"}),
+                    html.Td(fmt.format(val),
+                            style={"fontWeight": "bold", "fontSize": "12px", "textAlign": "right", "padding": "3px"})
+                ]))
 
             return dmc.Card([
-                dmc.Group([DashIconify(icon="mdi:file-document-outline", color=net['color']),
-                           dmc.Text(net['name'], fw=700, c=net['color'], size="sm")], mb="xs"),
-                dmc.Table(html.Tbody(rows), striped=True, withTableBorder=True)
-            ], withBorder=True, p="xs")
+                dmc.Text(net['name'], fw=700, size="xs", c=net['color'], mb=5,
+                         style={"textTransform": "uppercase", "borderBottom": f"2px solid {net['color']}"}),
+                dmc.Table(html.Tbody(rows), withTableBorder=False, withColumnBorders=False)
+            ], withBorder=True, shadow="sm", p="xs", radius="md")
 
-        table_grid = dmc.SimpleGrid(
-            cols={"base": 1, "sm": 2, "md": len(networks)},
-            spacing="md", children=[make_table(n) for n in networks]
+        metrics_grid = dmc.SimpleGrid(
+            cols={"base": 2, "lg": 4},
+            spacing="sm",
+            children=[make_table(n) for n in networks]
         )
 
-        # --- 6. OUTPUT FINALE ---
+        # D. REPORT AI (Stile Analitico richiesto)
+        report_card = dmc.Card(
+            withBorder=True, shadow="md", radius="lg", p="xl",
+            style={"backgroundColor": "#f8f9fa", "borderLeft": "5px solid #1c7ed6"},
+            children=[
+                dmc.Group([
+                    DashIconify(icon="mdi:text-box-search-outline", color="#1c7ed6", width=28),
+                    dmc.Text("Report Neurocomputazionale", size="lg", fw=700, c="#343a40")
+                ], mb="lg"),
+                dcc.Markdown(
+                    ai_report_text,
+                    style={
+                        "fontSize": "15px",
+                        "lineHeight": "1.7",
+                        "textAlign": "justify",
+                        "color": "#212529",
+                        "fontFamily": "Inter, sans-serif"
+                    }
+                )
+            ]
+        )
+
+        # --- 5. ASSEMBLAGGIO FINALE ---
         return dmc.Stack(gap="lg", children=[
-            dmc.SimpleGrid(cols={"base": 1, "sm": 2}, spacing="lg", children=[
-                dmc.Card([dcc.Graph(figure=fig_radar, config={"displayModeBar": False})], withBorder=True, p="sm"),
-                dmc.Card([dcc.Graph(figure=fig_bar, config={"displayModeBar": False})], withBorder=True, p="sm")
+            # Riga 1: Grafici
+            dmc.SimpleGrid(cols=2, children=[
+                dmc.Card(dcc.Graph(figure=fig_radar, config={"displayModeBar": False}), withBorder=True, shadow="xs",
+                         radius="md", p="sm"),
+                dmc.Card(dcc.Graph(figure=fig_bar, config={"displayModeBar": False}), withBorder=True, shadow="xs",
+                         radius="md", p="sm")
             ]),
-            table_grid,
-            dmc.Card([
-                dmc.Group([DashIconify(icon="mdi:text-box-search-outline", color="blue"),
-                           dmc.Text("Analisi Clinica Narrativa", fw=700, size="lg")], mb="md"),
-                dmc.Stack(gap="xs", children=report_cards)
-            ], withBorder=True, p="lg", shadow="sm", bg="#f8f9fa")
+
+            # Riga 2: Metriche Complete
+            metrics_grid,
+
+            # Riga 3: Report AI
+            report_card
         ])
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return dmc.Alert(f"Errore Critico: {str(e)}", color="red")
-
+        return dmc.Alert(f"Errore di Renderizzazione: {str(e)}", color="red")
 
 # =============================================================================
 # 20. CALLBACK: GESTIONE CONTESTO (SYNC TRA TAB)
@@ -3258,10 +3273,8 @@ def render_comparison_results(path, ma, ea, mb, eb, mc, ec, md, ed, na, nb, nc, 
     Output("network-context-selector", "data"),
     Output("network-context-selector", "style"),
     Output("network-context-selector", "value"),  # <--- NUOVO OUTPUT: Cambia valore automaticamente
-
     Input("store-node-data", "data"),  # Trigger upload singolo
     Input("store-map-a", "data"),  # Trigger confronto
-
     State("network-context-selector", "value"),
     State("store-map-b", "data"), State("store-map-c", "data"), State("store-map-d", "data")
 )
@@ -3320,15 +3333,12 @@ def update_context_options(main_data, ma, current_value, mb, mc, md):
     Output("store-adj-matrix", "data", allow_duplicate=True),
     Output("store-edge-coords", "data", allow_duplicate=True),
     Output("store-analysis-report", "data", allow_duplicate=True),
-
     Input("network-context-selector", "value"),
-
     # Dati Confronto (Sorgenti)
     State("store-map-a", "data"), State("store-edge-a", "data"),
     State("store-map-b", "data"), State("store-edge-b", "data"),
     State("store-map-c", "data"), State("store-edge-c", "data"),
     State("store-map-d", "data"), State("store-edge-d", "data"),
-
     # Dati Main (Per revert) - Opzionale, qui ricalcoliamo per sicurezza
     prevent_initial_call=True
 )
@@ -3446,7 +3456,7 @@ def switch_active_network(selection, ma, ea, mb, eb, mc, ec, md, ed):
 
 
 # =============================================================================
-# 21. CALLBACK: CHATBOT AI CONTESTUALE
+# 21. CALLBACK: CHATBOT AI CONTESTUALE E INTELLIGENTE
 # =============================================================================
 
 # 21a. Apertura/Chiusura Finestra
@@ -3461,107 +3471,145 @@ def switch_active_network(selection, ma, ea, mb, eb, mc, ec, md, ed):
 def toggle_chat(n1, n2, is_open):
     new_state = not is_open
     display = "flex" if new_state else "none"
-
-    # Aggiorniamo lo stile mantenendo le proprietà fisse
     style = chat_window_style.copy()
     style["display"] = display
-
     return style, new_state
 
 
-# 21b. CHATBOT CON INTELLIGENZA REALE (OpenAI GPT)
+# Funzione Helper per generare il Prompt di Sistema Dinamico
+def generate_system_prompt(current_path, single_data, map_a, map_b):
+    base_prompt = """
+    Sei NeuroAssistant, l'IA integrata in NeuroGraph 3D.
+    Il tuo obiettivo è guidare l'utente nell'uso dell'interfaccia E analizzare i dati scientifici.
+    Sii conciso, professionale ma amichevole. Usa la formattazione Markdown (grassetti, liste).
+    """
+
+    context_specific = ""
+    data_info = ""
+
+    # --- LOGICA DI CONTESTO BASATA SULLA PAGINA ---
+    if current_path == "/graph":
+        context_specific = """
+        [MODALITÀ ATTUALE: VISUALIZZAZIONE 3D]
+        Sei nella vista principale del grafo. Spiega all'utente che qui può:
+        1. Navigare nello spazio 3D (Click sx ruota, dx sposta, rotella zoom).
+        2. Usare la Sidebar a Sinistra per:
+           - Cambiare colore dei nodi (es. per Community o Degree).
+           - Filtrare la rete (Slider risoluzione Louvain, Peso minimo archi).
+           - Isolare regioni anatomiche specifiche (es. Frontale, Occipitale).
+        3. Cliccare sui nodi per vedere i dettagli e le connessioni nel pannello destro.
+        4. Confrontare due comunità specifiche usando il pannello 'Filtri'.
+        """
+        if single_data:
+            df = pd.read_json(StringIO(single_data), orient="split")
+            data_info = f"Dati caricati: Grafo con {len(df)} nodi. Colonne disponibili: {list(df.columns)}."
+        else:
+            data_info = "Nessun dato caricato nel grafico. Invita l'utente a tornare alla Home per caricare i file."
+
+    elif current_path == "/simulation":
+        context_specific = """
+        [MODALITÀ ATTUALE: SIMULAZIONE AI & RESILIENZA]
+        Sei nel modulo di stress-test. Spiega all'utente che qui può:
+        1. Simulare danni cerebrali (Ictus, Alzheimer, Attacchi Random).
+        2. Selezionare un nodo target 'Focale' (i nodi rossi nella lista sono Hub critici).
+        3. Regolare l'intensità del danno con lo slider.
+        4. Premere 'Avvia Simulazione' per calcolare la perdita di efficienza globale.
+        """
+        if single_data:
+            data_info = "Dati pronti per la simulazione."
+        else:
+            data_info = "Mancano i dati. Invita l'utente a caricarli nella Home."
+
+    elif current_path == "/compare":
+        context_specific = """
+        [MODALITÀ ATTUALE: CONFRONTO RETI (MULTIGRAPH)]
+        Sei nella dashboard comparativa. Spiega all'utente che qui può:
+        1. Vedere le differenze tra Rete A (Baseline) e Rete B (Target).
+        2. Analizzare il Radar Chart per metriche globali (Efficienza, Modularità).
+        3. Leggere il Report Clinico generato automaticamente in basso.
+        4. Esaminare la tabella dei 'Top 10 Nodi' che hanno cambiato maggiormente connettività.
+        """
+        if map_a and map_b:
+            data_info = "Confronto attivo tra due reti."
+        else:
+            data_info = "Dati insufficienti per il confronto."
+
+    else:  # Home o Upload
+        context_specific = """
+        [MODALITÀ ATTUALE: HOME / UPLOAD]
+        Sei nella pagina di caricamento.
+        Spiega all'utente che deve caricare due file CSV per ogni rete:
+        1. File Mapping (Nodi): deve avere colonne 'roi_name' (o label) e coordinate (x,y,z).
+        2. File Edges (Archi): matrice di adiacenza o lista sorgente-target-peso.
+        Invita l'utente a trascinare i file nei box appositi.
+        """
+
+    return f"{base_prompt}\n\n{context_specific}\n\n[INFO DATI]\n{data_info}"
+
+
+# 21b. Callback Chat Principale
 @app.callback(
     Output("chat-messages-container", "children"),
     Output("chat-input", "value"),
     Output("chat-history", "data"),
-
     Input("btn-send-chat", "n_clicks"),
     Input("chat-input", "n_submit"),
-
+    Input("btn-chat-help-context", "n_clicks"),  # NUOVO TRIGGER: Bottone aiuto contestuale
     State("chat-input", "value"),
     State("chat-history", "data"),
-
-    # CONTESTO: Leggiamo i dati per "istruire" l'AI
-    State("store-node-data", "data"),  # Rete Singola
-    State("store-map-a", "data"),  # Rete A (Confronto)
-    State("store-map-b", "data"),  # Rete B (Confronto)
-
+    State("url", "pathname"),  # FONDAMENTALE: Sappiamo dove siamo
+    # Dati per contesto
+    State("store-node-data", "data"),
+    State("store-map-a", "data"),
+    State("store-map-b", "data"),
     prevent_initial_call=True
 )
-def chat_interaction(n_click, n_sub, user_text, history, single_net, map_a, map_b):
-    if not user_text: return dash.no_update, dash.no_update, dash.no_update
+def chat_interaction(n_click, n_sub, n_help, user_text, history, current_path, single_net, map_a, map_b):
+    ctx = dash.callback_context
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
     if history is None: history = []
 
-    # 1. Aggiungi messaggio utente alla storia locale
+    # Gestione Input Utente
+    if triggered_id == "btn-chat-help-context":
+        user_text = "Cosa posso fare in questa schermata? Quali sono le funzionalità?"
+    elif not user_text:
+        return dash.no_update, dash.no_update, dash.no_update
+
+    # 1. Aggiungi messaggio utente alla storia
     history.append({"role": "user", "content": user_text})
 
-    # --- A. COSTRUZIONE DEL CONTESTO (Cosa sa l'AI dei dati?) ---
-    # Questo è il "System Prompt": istruisce l'AI su come comportarsi e cosa sta guardando.
-    system_instruction = "Sei un assistente esperto in Neuroscienze Computazionali e Teoria dei Grafi per l'applicazione 'NeuroGraph 3D'. Rispondi in modo tecnico ma conciso."
+    # 2. Genera il System Prompt "Intelligente" basato sull'URL
+    system_instruction = generate_system_prompt(current_path, single_net, map_a, map_b)
 
-    data_context = ""
-    try:
-        if map_a and map_b:
-            # Modalità Confronto
-            df_a = pd.read_json(StringIO(map_a), orient="split")
-            df_b = pd.read_json(StringIO(map_b), orient="split")
-            data_context = f"""
-            CONTESTO DATI ATTUALE:
-            L'utente sta analizzando un CONFRONTO tra due reti cerebrali:
-            1. Rete A (Baseline): {len(df_a)} nodi.
-            2. Rete B (Target): {len(df_b)} nodi.
-            L'utente potrebbe chiederti differenze di Efficienza Globale, Modularità o Robustezza.
-            """
-        elif single_net:
-            # Modalità Singola
-            df = pd.read_json(StringIO(single_net), orient="split")
-            cols = ", ".join(df.columns)
-            data_context = f"""
-            CONTESTO DATI ATTUALE:
-            L'utente sta analizzando una SINGOLA rete neurale.
-            - Numero Nodi: {len(df)}.
-            - Metriche disponibili nel dataset: {cols}.
-            Se l'utente chiede consigli, suggerisci di analizzare la 'Betweenness Centrality' per trovare gli Hub o la 'Modularità'.
-            """
-        else:
-            data_context = "CONTESTO DATI: Nessun dato è stato ancora caricato dall'utente. Se chiede di analizzare qualcosa, invitalo a caricare i file nella Home Page."
-    except Exception as e:
-        data_context = f"Errore lettura contesto dati: {str(e)}"
-
-    # --- B. CHIAMATA A CHATGPT ---
-    ai_response = "Errore di connessione."
+    ai_response = "Thinking..."
 
     try:
-        # Prepariamo i messaggi per l'API
-        # 1. Istruzione di sistema (invisibile all'utente)
-        messages_payload = [
-            {"role": "system", "content": system_instruction + "\n\n" + data_context}
-        ]
+        # Costruzione Payload
+        messages_payload = [{"role": "system", "content": system_instruction}]
 
-        # 2. Aggiungiamo la storia recente (ultimi 4 scambi) per dare memoria alla chat
-        # (Escludiamo i messaggi troppo vecchi per risparmiare token e costi)
-        recent_history = history[-5:]
+        # Aggiungi ultimi 6 messaggi per contesto conversazione
+        recent_history = history[-6:]
         for msg in recent_history:
-            # Mappiamo 'bot' in 'assistant' per l'API di OpenAI
             role = "assistant" if msg["role"] == "bot" else "user"
             messages_payload.append({"role": role, "content": msg["content"]})
 
-        # 3. Invio richiesta
+        # Chiamata API Groq/OpenAI
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages_payload,  # Limita la lunghezza della risposta
-            temperature=0.7  # Creatività (0=Robotico, 1=Creativo)
+            model="llama-3.3-70b-versatile",  # O il modello che preferisci
+            messages=messages_payload,
+            temperature=0.6,
+            max_tokens=32768
         )
-
         ai_response = completion.choices[0].message.content
 
     except Exception as e:
-        ai_response = f"⚠️ Errore API OpenAI: {str(e)}. Controlla la tua API Key o la connessione internet."
+        ai_response = f"⚠️ Errore di connessione AI: {str(e)}"
 
-    # 4. Aggiorna storia con la risposta del bot
+    # 3. Aggiorna storia
     history.append({"role": "bot", "content": ai_response})
 
-    # 5. Renderizza i messaggi (UI)
+    # 4. Renderizza Messaggi
     bubbles = []
     for msg in history:
         is_user = msg["role"] == "user"
@@ -3570,17 +3618,27 @@ def chat_interaction(n_click, n_sub, user_text, history, single_net, map_a, map_
                 justify="flex-end" if is_user else "flex-start",
                 children=[
                     dmc.Paper(
-                        p="xs", radius="md",
+                        p="sm", radius="lg",
                         bg="indigo" if is_user else "gray.1",
                         c="white" if is_user else "dark",
-                        style={"maxWidth": "85%", "fontSize": "14px"},
-                        children=dcc.Markdown(msg["content"])
+                        shadow="xs",
+                        style={"maxWidth": "85%", "fontSize": "14px", "lineHeight": "1.5"},
+                        children=[
+                            # Icona per il bot
+                            html.Div(DashIconify(icon="mdi:robot", width=16),
+                                     style={"marginBottom": 5}) if not is_user else None,
+                            dcc.Markdown(msg["content"])
+                        ]
                     )
-                ]
+                ], mb="xs"
             )
         )
 
+    # Scroll automatico (un po' hacky in Dash puro, ma funziona aggiungendo un div finale)
+    bubbles.append(html.Div(id="scroll-anchor"))
+
     return bubbles, "", history
+
 
 # =============================================================================
 # 16. CALLBACK: Export Dati
